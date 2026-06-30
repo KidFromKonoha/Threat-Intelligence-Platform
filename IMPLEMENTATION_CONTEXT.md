@@ -161,3 +161,86 @@ npm run dev
 alembic revision --autogenerate -m "message"
 alembic upgrade head
 ```
+
+---
+
+## Phase 2 — Database Foundation
+
+### New Files
+
+```
+backend/
+  app/
+    db/
+      enums.py          # All shared enum classes (IndicatorType, Severity, FeedStatus, …)
+      mixins.py         # TimestampMixin — created_at / updated_at with server_default=func.now()
+      associations.py   # All many-to-many join Table objects (no ORM classes)
+    features/
+      indicators/
+        models.py       # Indicator
+      threat_actors/
+        models.py       # ThreatActor
+      malware/
+        models.py       # Malware
+      campaigns/
+        models.py       # Campaign
+      vulnerabilities/
+        models.py       # Vulnerability
+      mitre/
+        models.py       # MITRETechnique
+      feeds/
+        models.py       # Feed, FeedRun
+      assets/
+        models.py       # Asset
+      investigations/
+        models.py       # Investigation
+      watchlists/
+        models.py       # Watchlist
+      reports/
+        models.py       # Report, Comment
+  alembic/
+    versions/
+      6d4d4982970a_database_foundation.py   # Single migration for all Phase 2 tables
+```
+
+### Architectural Decisions
+
+- **String-backed enums** — All enum columns use `String(N)` + Python `str(enum.Enum)`
+  values rather than PostgreSQL native ENUM types.  Adding new enum values never
+  requires a DDL migration.
+
+- **UUID as Text** — Primary keys are `Text` with
+  `server_default=text("gen_random_uuid()::text")`.  PostgreSQL's
+  `pgcrypto` / built-in `gen_random_uuid()` generates the value; the application
+  layer never needs to import `uuid`.  No separate `pgcrypto` extension is needed
+  on PostgreSQL ≥ 13.
+
+- **Centralized associations** — All `Table` join objects live in
+  `app/db/associations.py` and are imported before any feature model.  This
+  prevents circular imports and keeps the full relationship graph reviewable in
+  one file.
+
+- **Centralized enums** — All enum classes live in `app/db/enums.py`.  Feature
+  models import from there, not from each other.
+
+- **TimestampMixin** — Defined in `app/db/mixins.py`.  `MITRETechnique` and
+  `FeedRun` intentionally do not use it: MITRE data is static reference data;
+  `FeedRun` uses `start_time`/`end_time` instead.
+
+- **Comment polymorphism** — `Comment` uses two nullable FKs
+  (`investigation_id`, `report_id`) rather than a generic polymorphic
+  association table.  Only one FK is populated per row.  This keeps Phase 2
+  simple and avoids premature abstraction; a generic entity-reference pattern
+  can be introduced in a future phase if needed.
+
+- **No new dependencies** — Phase 2 introduces no new Python packages.
+  All required types (`ARRAY`, `JSON`, `DateTime`, etc.) are already available
+  via the existing SQLAlchemy 2.0 installation.
+
+### Updated alembic/env.py Convention
+
+All feature models **and** `app.db.associations` must be imported in
+`alembic/env.py` before `target_metadata` is referenced.  When a new model is
+added in a future phase, add its import to the existing import block in
+`env.py`.
+

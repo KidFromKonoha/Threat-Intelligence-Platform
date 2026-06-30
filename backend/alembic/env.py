@@ -6,8 +6,25 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import settings
 from app.db.session import Base
 
-# Feature models will be imported here as they are introduced, e.g.:
-# from app.features.indicators.models import Indicator  # noqa: F401
+
+# ── Feature model imports ─────────────────────────────────────────────────────
+# All models must be imported here so that their tables are registered on
+# Base.metadata before Alembic inspects it for autogenerate / upgrade head.
+# Import associations first — it only defines Table objects with no back-refs.
+import app.db.associations  # noqa: F401
+
+from app.features.indicators.models import Indicator  # noqa: F401
+from app.features.threat_actors.models import ThreatActor  # noqa: F401
+from app.features.malware.models import Malware  # noqa: F401
+from app.features.campaigns.models import Campaign  # noqa: F401
+from app.features.vulnerabilities.models import Vulnerability  # noqa: F401
+from app.features.mitre.models import MITRETechnique  # noqa: F401
+from app.features.feeds.models import Feed, FeedRun  # noqa: F401
+from app.features.assets.models import Asset  # noqa: F401
+from app.features.investigations.models import Investigation  # noqa: F401
+from app.features.watchlists.models import Watchlist  # noqa: F401
+from app.features.reports.models import Comment, Report  # noqa: F401
+
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
