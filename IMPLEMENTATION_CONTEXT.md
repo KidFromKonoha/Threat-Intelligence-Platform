@@ -427,3 +427,52 @@ print(m)
 - **Async Manual Execution**: Instead of running `FeedRunner` synchronously on the HTTP thread when `POST /feeds/{id}/run` is called, it triggers the existing Celery task `run_collector.delay()` and immediately returns a `202 Accepted` response. This prevents blocking API calls for long-running collector fetches.
 - **Dynamic Feed Statistics**: Rather than adding/duplicating statistics columns directly to the `Feed` model, feed performance and execution metrics (such as total records added, total runs, last status) are computed dynamically from the `FeedRun` table and presented via a lightweight `GET /feeds/status` endpoint to optimize for operational dashboards.
 
+---
+
+## Phase 5 — Search API
+
+### New Files
+
+```
+backend/app/db/
+  text_match.py                          # MatchMode enum + apply_text_match() helper
+
+backend/app/features/indicators/
+  schemas.py                             # IndicatorFilters, IndicatorResponse, IndicatorDetailResponse, PaginatedIndicators
+  service.py                             # IndicatorSearchService
+  router.py                              # GET /indicators, GET /indicators/{id}
+
+backend/app/features/search/
+  __init__.py
+  schemas.py                             # GlobalSearchResult, EntitySummary, IndicatorSummary
+  service.py                             # GlobalSearchService
+  router.py                              # GET /search
+
+backend/alembic/versions/
+  830382a8ded4_search_indexes.py         # Alembic migration: performance indexes
+```
+
+### Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/indicators` | Filtered, sorted, paginated indicator search |
+| `GET` | `/api/v1/indicators/{id}` | Full indicator detail with related entities |
+| `GET` | `/api/v1/search` | Global cross-entity keyword search |
+
+### Architectural Decisions
+
+- **Resource organization**: Indicator endpoints live in the `indicators` feature module. Global search lives in the `search` feature module. No cross-module leakage.
+- **Composable filter pattern**: `IndicatorSearchService.search()` builds a `predicates: list = []` and appends conditions one by one. A single `.filter(*predicates)` call applies them all. No nested if/else query tree.
+- **Flexible text matching**: `app/db/text_match.py` exports `MatchMode` (exact / prefix / contains) and `apply_text_match(column, value, mode)`. Adding a new mode requires changing only this helper. Callers pass `value_match: MatchMode` as a query parameter.
+- **Relational filters via EXISTS**: `feed`, `malware`, `threat_actor`, and `campaign` filters use `exists(select(...).where(...))` subqueries against the association tables — never a JOIN — to prevent row multiplication when an indicator has multiple related entities.
+- **Tags filter**: `type_coerce(Indicator.tags, PG_ARRAY(Text)).overlap(filters.tags)` uses PostgreSQL's `&&` array overlap operator. `type_coerce` is required because `Mapped[list]` (unparameterised) is used in the Phase 2 model, which prevents `.overlap()` from being available directly on the column attribute.
+- **Global search**: `GlobalSearchService` runs one `ilike "%q%"` query per entity type (7 queries total), each capped at `limit` rows. No cross-table JOIN. Logs query term, per-entity hit counts, total hits, and wall-clock duration.
+- **Detail endpoint & uselist=False gotcha**: Phase 2 `Indicator` model relationships use `Mapped[list]` (generic, unparameterised) — SQLAlchemy infers `uselist=False` for all of them, meaning each relationship returns a scalar ORM object or `None`, not a collection. The `_coerce_rel()` helper in `service.py` wraps scalar values in a list before building the response schema, so the API always returns `[]` or `[item]` arrays. This is documented as a known constraint; fixing it requires updating Phase 2 models (out of scope for Phase 5).
+- **Alembic migration `830382a8ded4`**: Adds `ix_indicator_confidence`, `ix_indicator_source_count`, `ix_indicator_first_seen`, `ix_indicator_last_seen` — columns used for sorting and range filtering that were not previously indexed.
+
+### Known Constraint
+
+> The `Indicator.*` relationships (feeds, malware, threat_actors, etc.) are all `uselist=False` due to the unparameterised `Mapped[list]` type hint in the Phase 2 ORM models. Each relationship currently returns at most one related entity. Fixing this to return proper many-to-many collections requires parameterising the type hints (e.g. `Mapped[list["Feed"]]`) in the Phase 2 models — this is safe and non-breaking but out of scope for Phase 5.
+
+
