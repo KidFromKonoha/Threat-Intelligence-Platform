@@ -408,3 +408,22 @@ print(m)
 "
 ```
 
+---
+
+## Phase 4 — Feed Management API
+
+### New Dependencies
+
+- `croniter==2.0.5` added to `requirements.txt` to support cron schedule expression validation in Pydantic schemas.
+
+### API Layer Structure
+
+- **Schemas (`backend/app/features/feeds/schemas.py`)**: Added `FeedBase`, `FeedCreate`, `FeedUpdate`, `FeedResponse`, and `FeedRunResponse` Pydantic models. Includes field validation for the `schedule` field using `croniter.is_valid()`.
+- **Service (`backend/app/features/feeds/service.py`)**: Added `FeedService` class encapsulating the business logic for standard CRUD operations and custom logic like triggering Celery task for feed runner. 
+- **Router (`backend/app/features/feeds/router.py`)**: Added RESTful endpoints (`/feeds`, `/feeds/{id}`, etc.) delegating business operations to the `FeedService`. Registered under `backend/app/api_v1.py`.
+
+### Architectural Decisions
+
+- **Async Manual Execution**: Instead of running `FeedRunner` synchronously on the HTTP thread when `POST /feeds/{id}/run` is called, it triggers the existing Celery task `run_collector.delay()` and immediately returns a `202 Accepted` response. This prevents blocking API calls for long-running collector fetches.
+- **Dynamic Feed Statistics**: Rather than adding/duplicating statistics columns directly to the `Feed` model, feed performance and execution metrics (such as total records added, total runs, last status) are computed dynamically from the `FeedRun` table and presented via a lightweight `GET /feeds/status` endpoint to optimize for operational dashboards.
+

@@ -71,3 +71,82 @@ class CollectorMetrics(BaseModel):
     records_skipped: int = 0
     errors: list[str] = Field(default_factory=list)
     duration_seconds: float = 0.0
+
+# ── API Schemas ───────────────────────────────────────────────────────────────
+
+import croniter
+from app.db.enums import FeedType, FeedStatus, FeedRunStatus
+
+class FeedBase(BaseModel):
+    name: str = Field(..., min_length=1)
+    description: str | None = None
+    type: FeedType = FeedType.OPEN_SOURCE
+    enabled: bool = True
+    status: FeedStatus = FeedStatus.ACTIVE
+    schedule: str | None = None
+    rate_limit: int | None = None
+    priority: int = Field(default=50, ge=0, le=100)
+
+    @field_validator("schedule")
+    @classmethod
+    def validate_schedule(cls, v: str | None) -> str | None:
+        if v is not None:
+            if not croniter.croniter.is_valid(v):
+                raise ValueError("Invalid cron schedule expression")
+        return v
+
+    model_config = {"use_enum_values": True}
+
+
+class FeedCreate(FeedBase):
+    authentication: dict[str, Any] | None = None
+
+
+class FeedUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    description: str | None = None
+    type: FeedType | None = None
+    enabled: bool | None = None
+    status: FeedStatus | None = None
+    schedule: str | None = None
+    rate_limit: int | None = None
+    priority: int | None = Field(default=None, ge=0, le=100)
+    authentication: dict[str, Any] | None = None
+
+    @field_validator("schedule")
+    @classmethod
+    def validate_schedule(cls, v: str | None) -> str | None:
+        if v is not None:
+            if not croniter.croniter.is_valid(v):
+                raise ValueError("Invalid cron schedule expression")
+        return v
+
+    model_config = {"use_enum_values": True}
+
+
+class FeedResponse(FeedBase):
+    id: str
+    authentication: dict[str, Any] | None = None
+    last_success: datetime | None = None
+    last_failure: datetime | None = None
+    records_imported: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class FeedRunResponse(BaseModel):
+    id: str
+    feed_id: str
+    start_time: datetime
+    end_time: datetime | None = None
+    duration: float | None = None
+    status: str
+    records_received: int
+    records_added: int
+    records_updated: int
+    records_skipped: int
+    errors: list | None = None
+
+    model_config = {"from_attributes": True}
