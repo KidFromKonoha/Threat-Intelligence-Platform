@@ -310,3 +310,101 @@ backend/
 
 - **`max_retries` conflation** (`runner.py`): The original code set `max_retries=feed.rate_limit or 3`, which conflated two unrelated concepts (`rate_limit` is requests-per-minute; `max_retries` is retry count). Fixed to always use `max_retries=3` (the `CollectorConfig` default) since `Feed` has no `max_retries` column.
 - **Timeout not enforced** (`runner.py`): `config.timeout` was documented and passed around but `collector.fetch()` was called with no timeout wrapper. Fixed by wrapping each `fetch()` attempt in a `ThreadPoolExecutor` and using `Future.result(timeout=config.timeout)`.
+
+---
+
+## Phase 3B — ThreatFox Collector
+
+### New Files
+
+```
+backend/
+  app/
+    features/
+      feeds/
+        collectors/
+          threatfox.py   # ThreatFoxCollector — production abuse.ch ThreatFox collector
+```
+
+### Collector Overview
+
+`ThreatFoxCollector` is a production-quality collector for the [ThreatFox](https://threatfox.abuse.ch) community API operated by abuse.ch.
+
+**Registration:** `@registry.register` — auto-discovered at startup; no other file changes required.
+
+**API:** `POST https://threatfox-api.abuse.ch/api/v1/` with `{"query": "get_iocs", "days": N}`.
+Auth-Key is read from `Feed.authentication["api_key"]`. Anonymous access (no key) is supported with reduced rate limits.
+
+**HTTP:** Uses Python stdlib `urllib.request` — no new runtime dependency.
+
+### Field Mapping
+
+| ThreatFox field | Platform field | Notes |
+|---|---|---|
+| `ioc` | `value` | raw indicator string |
+| `ioc_type` | `type` | via `_IOC_TYPE_MAP` |
+| `ioc` (bare IP) | `normalized_value` | ip:port → bare IP only (see below) |
+| `confidence_level` | `confidence` | int 0–100 |
+| `threat_type` | `severity` | botnet_cc/payload_delivery/payload_url → HIGH; others → MEDIUM |
+| `first_seen` | `first_seen` | parsed from `"%Y-%m-%d %H:%M:%S UTC"` |
+| `last_seen` | `last_seen` | null → falls back to `first_seen` |
+| `tags` + `malware_printable` + `malware` + `threat_type` | `tags` | merged, deduplicated |
+| full record | `raw` | preserved for auditing |
+
+### Supported IOC Types
+
+| ThreatFox `ioc_type` | Platform `IndicatorType` |
+|---|---|
+| `ip:port` | `IPV4` |
+| `domain` | `DOMAIN` |
+| `url` | `URL` |
+| `md5_hash` | `MD5` |
+| `sha1_hash` | `SHA1` |
+| `sha256_hash` | `SHA256` |
+
+All other `ioc_type` values are silently dropped in `validate()`.
+
+### `ip:port` Deduplication Strategy
+
+ThreatFox represents C2 servers as `"1.2.3.4:4444"`.  The same C2 IP may appear on multiple ports across different records.
+
+- `value` = `"1.2.3.4:4444"` (analysts search this).
+- `normalized_value` = `"1.2.3.4"` (deduplication key in `(type, normalized_value)` unique index).
+
+This means a C2 IP that rotates ports is stored as one `Indicator` row with `source_count` incrementing and `last_seen` updating — not as a new row per port.
+
+### No New Dependencies
+
+`urllib.request` and `json` are Python stdlib.  `requests` was not added to `requirements.txt`.
+
+### Database Setup
+
+Run once per environment to activate the feed:
+
+```sql
+INSERT INTO feeds (name, description, type, enabled, status, schedule, authentication)
+VALUES (
+    'threatfox',
+    'ThreatFox IOC feed by abuse.ch',
+    'open_source',
+    true,
+    'active',
+    '0 */6 * * *',
+    '{"api_key": "YOUR_THREATFOX_API_KEY"}'::json
+);
+```
+
+`api_key` is optional — omit it for anonymous access.
+`days` in `authentication` overrides `_DEFAULT_DAYS = 1` (e.g. `{"api_key": "...", "days": 3}`).
+
+### Manual Run
+
+```bash
+docker exec tip-backend python -c "
+import app.db
+from app.features.feeds.runner import FeedRunner
+m = FeedRunner('threatfox').run()
+print(m)
+"
+```
+
