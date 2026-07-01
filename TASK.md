@@ -1,52 +1,51 @@
 # Current Task
 
-## Phase 2 – Database Foundation
+## Phase 3A – Feed Collection Framework
 
 Objective
 
-Implement the complete database layer for the Threat Intelligence Platform.
+Build the feed ingestion framework.
 
-Scope
-
-- SQLAlchemy models
-- Alembic migration
-- UUID primary keys
-- Relationships
-- Constraints
-- Indexes
-- Common base model
-- Timestamp mixins
-- Enumerations
-
-Entities
-
-- Indicator
-- ThreatActor
-- Malware
-- Campaign
-- Vulnerability
-- MITRETechnique
-- Feed
-- FeedRun
-- Asset
-- Investigation
-- Watchlist
-- Report
-- Comment
+Do not implement real threat feeds yet.
 
 Requirements
 
-- Follow README.md
-- Follow SPEC.md
-- Use feature-based architecture
-- No API endpoints
-- No business logic
-- No collectors
-- No services
-- No UI
+- Feed Manager
+- Base Collector class
+- Collector Registry
+- Scheduler abstraction
+- Validation pipeline
+- Normalization pipeline
+- Storage pipeline
+- Retry support
+- Timeout support
+- Logging
+- Metrics
+- Feed configuration
+
+Architecture
+
+Every collector must implement:
+
+- fetch()
+- validate()
+- normalize()
+- store()
+
+Collectors must be automatically discoverable.
+
+The framework must allow adding a new feed by creating a single new collector class.
+
+Do not implement APIs.
+
+Do not implement UI.
+
+Do not implement enrichment.
+
+Do not implement correlation.
 
 Deliverables
 
-- Models
-- Alembic migration
+- Working feed framework
+- Example dummy collector
 - Updated IMPLEMENTATION_CONTEXT.md

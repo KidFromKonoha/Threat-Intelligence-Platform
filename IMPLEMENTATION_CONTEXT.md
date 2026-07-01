@@ -237,10 +237,76 @@ backend/
   All required types (`ARRAY`, `JSON`, `DateTime`, etc.) are already available
   via the existing SQLAlchemy 2.0 installation.
 
-### Updated alembic/env.py Convention
+### Model Bootstrap Convention (`app/db/__init__.py`)
 
-All feature models **and** `app.db.associations` must be imported in
-`alembic/env.py` before `target_metadata` is referenced.  When a new model is
-added in a future phase, add its import to the existing import block in
-`env.py`.
+**Architectural change applied during Phase 3A verification.**
 
+`app/db/__init__.py` now imports all association tables and all feature ORM
+models in a fixed order:
+
+1. `app.db.associations` — registers every `Table` object on `Base.metadata`.
+2. All `app.features.<feature>.models` modules — registers every mapped class.
+
+**Why this is necessary:**
+
+SQLAlchemy resolves `relationship(secondary="table_name")` and
+`relationship("ClassName")` string arguments at mapper-configuration time,
+which is triggered the moment any mapped class is first used in a query.
+At that point, SQLAlchemy configures **all** mappers in the registry
+simultaneously.  If any referenced `Table` object or ORM class has not yet
+been imported, the process raises:
+
+```
+InvalidRequestError: expression '<name>' failed to locate a name
+```
+
+**Why `app/db/__init__.py` is the right place:**
+
+Every entrypoint (uvicorn, Celery worker, `alembic`, shell scripts) imports
+at least one symbol from `app.db` before issuing any query.  Placing the
+bootstrap here means the mapper graph is always fully populated, regardless
+of which feature model is imported first or which entrypoint is used.
+No individual feature module needs to import models from other features.
+
+**When adding a new model in a future phase:**
+Add `import app.features.<new_feature>.models` to `app/db/__init__.py`
+(in alphabetical order).  Also add it to `alembic/env.py` as before
+(required for `alembic autogenerate` to detect the new tables).
+
+---
+
+## Phase 3A — Feed Collection Framework
+
+### New Files
+
+```
+backend/
+  app/
+    features/
+      feeds/
+        schemas.py           # RawIndicator schema, CollectorMetrics
+        base_collector.py    # BaseCollector abstract base class, CollectorConfig
+        registry.py          # CollectorRegistry singleton (decorator registration, auto-discovery)
+        pipeline.py          # ValidationPipeline, NormalizationPipeline, StoragePipeline
+        runner.py            # FeedRunner (timing, logs, back-off retry logic, DB transactional integrity)
+        scheduler.py         # FeedScheduler — cron-based dispatch abstraction; scheduler singleton
+        tasks.py             # Celery tasks: feeds.run_collector + feeds.tick_scheduler
+        collectors/
+          __init__.py        # Auto-discovery hook
+          dummy.py           # DummyCollector (simulated feed generating synthetic IOCs)
+```
+
+### Architectural Decisions
+
+- **Decorator-Based Autodiscovery (`@registry.register`)** — Collectors register themselves dynamically by subclassing `BaseCollector` and applying the registry decorator. The framework imports everything under `collectors/` at startup to build the registry without modification to any core code.
+- **Decoupled Pipelines** — Validation (pre-filtering), Normalization (parsing to schema), and Storage are split into independent pipeline classes. Collectors only implement target logic (`fetch`, `validate`, `normalize`), while the framework handles the data ingestion process.
+- **Upsert Deduplication with SQL Conflict Clauses** — The `StoragePipeline` uses PostgreSQL-native `on_conflict_do_update` based on `(type, normalized_value)` to perform upserts, tracking `source_count` increments and updating `last_seen` dynamically on duplicate hits.
+- **Fail-safe Error Isolation** — Unhandled exceptions inside individual collectors are caught by the `FeedRunner` and logged to the running `FeedRun` entry without interrupting other scheduled collector tasks.
+- **Exponential Back-off Retries** — Retries are handled within the framework's `FeedRunner` instead of Celery's task retries. This ensures execution details (e.g. tracking temporary failures, tracking run durations) are captured accurately under the single database `FeedRun` instance.
+- **Timeout Enforcement via ThreadPoolExecutor** — `_fetch_with_retry` wraps each `fetch()` call in a `concurrent.futures.ThreadPoolExecutor`. `Future.result(timeout=config.timeout)` enforces the hard deadline. This is the correct approach for synchronous Python because `time.sleep()`-based timeouts cannot interrupt blocking I/O.
+- **Scheduler Abstraction (`FeedScheduler`)** — `scheduler.py` provides a `FeedScheduler` class with a `tick()` method. `tick()` queries all enabled feeds, evaluates each feed's `schedule` cron string (using `croniter` when available, falling back to an hourly interval policy), and dispatches a `run_collector` Celery task for each feed that is due. The `feeds.tick_scheduler` Celery task calls `scheduler.tick()` and is configured in `celery_app.py`'s `beat_schedule` to fire every 60 seconds.
+
+### Bug Fixes Applied During Phase 3A Review
+
+- **`max_retries` conflation** (`runner.py`): The original code set `max_retries=feed.rate_limit or 3`, which conflated two unrelated concepts (`rate_limit` is requests-per-minute; `max_retries` is retry count). Fixed to always use `max_retries=3` (the `CollectorConfig` default) since `Feed` has no `max_retries` column.
+- **Timeout not enforced** (`runner.py`): `config.timeout` was documented and passed around but `collector.fetch()` was called with no timeout wrapper. Fixed by wrapping each `fetch()` attempt in a `ThreadPoolExecutor` and using `Future.result(timeout=config.timeout)`.
