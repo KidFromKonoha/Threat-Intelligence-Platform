@@ -629,3 +629,51 @@ backend/alembic/versions/989320b0dc22_watchlists.py
 - **Direct Dashboard Integration**: Phase 9's `DashboardService` organization endpoint was properly connected to the new `WatchlistMatch` table using a simple `db.query(WatchlistMatch).count()`, fulfilling the integration requirement dynamically.
 - **Alembic Schema Evolution**: Authored an Alembic migration that expands the existing unused `watchlists` table, dropping `owner` (due to being out of scope for authentication phase right now), upgrading `matching_rule` string formatting, appending an indexed `watchlist_type`, and an immutable `values: ARRAY(Text)` array structure to support direct overlapping queries natively against normalized metrics.
 - **No External Event Handling**: Consistent with the requirements, notification systems (Slack, Teams, webhooks) and Celery crons were deferred to prevent scope creep. Watchlists are fully operational as continuous REST evaluators.
+
+## Phase 12 — Reporting Engine
+
+### New Files
+
+```
+backend/app/features/reports/
+  __init__.py
+  router.py
+  schemas.py
+  service.py
+```
+
+### API Layer Structure
+
+- **Schemas (`backend/app/features/reports/schemas.py`)**: Constructed a canonical reporting payload merging nested data models, unifying metrics originating across multiple domains (`ReportPlatformOverview`, `ReportThreatIntelligence`, `ReportInvestigations`, `ReportFeedStatistics`).
+- **Service (`backend/app/features/reports/service.py`)**: Contains `ReportService` which centralizes the transformation of SQL query output and dashboard hooks into the canonical Pydantic model (`ReportResponse`). Introduced `fpdf2` directly into dependencies to securely synthesize native PDFs without relying on system binary converters or WebKit headless browsers. Includes custom CSV formatting generation using standard library `csv`.
+- **Router (`backend/app/features/reports/router.py`)**: Introduces generic REST parameters to map `/reports/{type}` and `/reports/{type}/export?format={format}` cleanly, isolating presentation (JSON vs PDF vs CSV) out of the collection logic.
+
+### Architectural Decisions
+
+- **Complete Service Reusability**: Actively reused `DashboardService` methods directly to extract pre-optimized overview, organization, threat activity, and feed statistics sub-models. Avoided duplicating core ORM metric calculation into `ReportService`.
+- **Stateless Exports**: PDF and CSV payloads are generated purely in-memory using `io.StringIO` and `fpdf2.output(bytes)` logic, safely returning HTTP responses directly without writing temporary files to the container disk, minimizing I/O bottlenecks or zombie files.
+- **Dependency Minimalization**: Satisfied PDF requirements introducing only one lightweight pure-python PDF generator (`fpdf2`), avoiding extremely heavy OS packages usually associated with report generating frameworks (like `weasyprint`, `reportlab`, or `wkhtmltopdf`).
+
+## Phase 13 — Graph API
+
+### New Files
+
+```
+backend/app/features/graph/
+  __init__.py
+  router.py
+  schemas.py
+  service.py
+```
+
+### API Layer Structure
+
+- **Schemas (`backend/app/features/graph/schemas.py`)**: Defines `GraphNode` and `GraphEdge` alongside `GraphResponse` to output a fully normalized force-directed graph structure natively comprehensible by frontend visualization libraries without complex transforms.
+- **Service (`backend/app/features/graph/service.py`)**: `GraphService` encapsulates BFS traversal mechanism using highly optimized SQLAlchemy generic `selectinload('*')` loading, guaranteeing O(1) query patterns strictly mapped against distinct model sets. Integrates directly with the `CorrelationService` anchor evaluation when analyzing indicators.
+- **Router (`backend/app/features/graph/router.py`)**: Standardizes unified REST interface for evaluating all available primary graph domains (`/graph/indicator/{id}`, `/graph/threat-actor/{id}`, `/graph/malware/{id}`, `/graph/campaign/{id}`, `/graph/investigation/{id}`). Enforces parameter validation rejecting graph depths outside of bounds (1..3).
+
+### Architectural Decisions
+
+- **Complete Native Graph Execution**: Evaluated deep relational graphs purely utilizing PostgreSQL relational lookups completely eliminating secondary infrastructure components (like Neo4j) to prevent database desynchronization.
+- **Algorithmic Optimizations (Zero N+1)**: Developed a BFS algorithm leveraging bulk loading mapping tables rather than looping queries, meaning traversal to 1,000 sub-nodes at depth=2 utilizes essentially 1 query mapping table, resulting in near-instant traversal latency.
+- **Business Logic Non-Duplication**: Reused existing cross-correlation mechanisms explicitly, loading virtual vulnerabilities for Indicator graphs directly through the pre-built `CorrelationService`.
