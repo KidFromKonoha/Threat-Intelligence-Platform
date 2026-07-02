@@ -30,6 +30,7 @@ from app.features.malware.models import Malware
 from app.features.mitre.models import MITRETechnique
 from app.features.threat_actors.models import ThreatActor
 from app.features.vulnerabilities.models import Vulnerability
+from app.features.watchlists.models import WatchlistMatch
 
 from app.features.dashboard.schemas import (
     DashboardOverviewResponse,
@@ -153,8 +154,7 @@ class DashboardService:
             .filter(Asset.type == AssetType.VEHICLE_PLATFORM.value)\
             .scalar() or 0
             
-        # Watchlists are not implemented (Phase 9 instructions say "Do not implement Watchlists")
-        active_watchlist_matches = 0
+        active_watchlist_matches = db.query(WatchlistMatch).count()
         
         return DashboardOrganizationResponse(
             high_risk_asset_matches=high_risk_matches,

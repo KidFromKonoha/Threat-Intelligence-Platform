@@ -603,3 +603,29 @@ backend/app/features/entity_details/
 - **Combined Router Space**: Rather than placing the detail endpoints inside five separate routers, they were unified into `entity_details_router`. This simplifies dependency imports and centralizes detail construction without altering the scope of previously developed decoupled feature modules (like `investigations` or `feeds`).
 - **Reuse of CorrelationService**: `get_indicator` directly calls `CorrelationService.get_relationships` and `CorrelationService.get_related_indicators` to retrieve related intel efficiently instead of duplicating the logic, maintaining DRY principles.
 - **Entity Agnostic Timestamp Timelines**: Synthesized `TimelineEvent` objects by capturing the entity's `created_at` date, and interleaving them chronologically with events from linked entity records (such as `campaign_linked`, `threat_actor_linked`, and `enrichment_executed`).
+
+## Phase 11 — Watchlists & Alerting
+
+### New Files
+
+```
+backend/app/features/watchlists/
+  __init__.py
+  models.py
+  router.py
+  schemas.py
+  service.py
+backend/alembic/versions/989320b0dc22_watchlists.py
+```
+
+### API Layer Structure
+
+- **Schemas (`backend/app/features/watchlists/schemas.py`)**: Defined validation and responses for both `Watchlist` generation and `WatchlistMatch` records.
+- **Service (`backend/app/features/watchlists/service.py`)**: `WatchlistService` handles CRUD. Features a resilient `evaluate_indicator` logic which efficiently queries for matched `indicator.value` arrays directly using PostgreSQL's array overlap/any functions via SQLAlchemy's `.any()`. Avoids N+1 loops, executing bulk `or_()` filters against previously populated Threat Actor, Malware, and Campaign linked associations. Avoids duplicate `WatchlistMatch` generation.
+- **Router (`backend/app/features/watchlists/router.py`)**: Exposes REST interfaces at `/watchlists` and `/watchlists/matches` with a specialized evaluation endpoint. Added to `api_v1.py`.
+
+### Architectural Decisions
+
+- **Direct Dashboard Integration**: Phase 9's `DashboardService` organization endpoint was properly connected to the new `WatchlistMatch` table using a simple `db.query(WatchlistMatch).count()`, fulfilling the integration requirement dynamically.
+- **Alembic Schema Evolution**: Authored an Alembic migration that expands the existing unused `watchlists` table, dropping `owner` (due to being out of scope for authentication phase right now), upgrading `matching_rule` string formatting, appending an indexed `watchlist_type`, and an immutable `values: ARRAY(Text)` array structure to support direct overlapping queries natively against normalized metrics.
+- **No External Event Handling**: Consistent with the requirements, notification systems (Slack, Teams, webhooks) and Celery crons were deferred to prevent scope creep. Watchlists are fully operational as continuous REST evaluators.
