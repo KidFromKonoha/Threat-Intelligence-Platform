@@ -554,3 +554,28 @@ backend/alembic/versions/
 - **Independent Provider Execution**: `EnrichmentService.run_enrichment_sync()` iterates through all registered providers that support the indicator's type. It wraps each provider execution in a `try...except` block, ensuring that if one provider fails (e.g., timeout or bad response), it records the failure in the database and proceeds to the next provider. No provider can break the workflow.
 - **Zero Coupling with Core Models**: `EnrichmentResult` has a foreign key to `indicators.id`, but no `back_populates` was added to `Indicator`. This conforms to the non-goal of modifying existing models unnecessarily and avoids bloated JOIN queries when querying indicators.
 - **State Transition Logging**: An `EnrichmentResult` is created in `PENDING` state right before a provider executes. Upon completion, the row is updated to either `SUCCESS` or `FAILED` alongside the elapsed duration. This ensures visibility even if a worker crashes mid-execution.
+
+## Phase 9 — Dashboard API
+
+### New Files
+
+```
+backend/app/features/dashboard/
+  __init__.py
+  router.py
+  schemas.py
+  service.py
+```
+
+### API Layer Structure
+
+- **Schemas (`backend/app/features/dashboard/schemas.py`)**: Defined aggregate Pydantic schemas for overview metrics, threat activity statistics, organizational matching, feed status, and recent intelligence summaries.
+- **Service (`backend/app/features/dashboard/service.py`)**: `DashboardService` acts as a pure read-only aggregation layer. It executes optimized SQLAlchemy queries using `func.count()`, `func.date()`, and window functions to compile metrics across the entire application domain without retrieving or looping over large ORM collections in Python.
+- **Router (`backend/app/features/dashboard/router.py`)**: Provides the five required HTTP GET endpoints: `/overview`, `/threat-activity`, `/organization`, `/feed-status`, and `/recent-intelligence`. Registered in `api_v1.py`.
+
+### Architectural Decisions
+
+- **Aggregate SQL Queries**: The dashboard relies entirely on database-level aggregation to ensure scaling. For instance, calculating top threat actors utilizes a direct `GROUP BY` and `ORDER BY count DESC` directly on the association table `indicator_threat_actor`, preventing N+1 problems and minimizing memory usage.
+- **Zero Business Logic Duplication**: Data related to Indicators, Feeds, Assets, and Investigations are queried dynamically using their original models. No cached summary tables or materialized views were introduced, fulfilling the requirement for real-time overview using existing records.
+- **Missing Optional Data Handling**: The service returns empty collections (`[]`) and zero counts (`0`) instead of failing when requested analytics categories (e.g., active watchlist matches) do not possess underlying data, keeping the front-end consumers stable.
+- **Dependency Re-use**: Used the existing `IndicatorSummary` and `EntitySummary` schemas from the search feature to provide recent intelligence payloads.
