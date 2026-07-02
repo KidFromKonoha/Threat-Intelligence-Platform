@@ -48,10 +48,4 @@ def search_indicators(
     )
 
 
-@router.get("/{indicator_id}", response_model=IndicatorDetailResponse)
-def get_indicator(
-    indicator_id: str,
-    db: Session = Depends(get_db),
-) -> IndicatorDetailResponse:
-    """Retrieve a single indicator with all related entities."""
-    return IndicatorSearchService.get_by_id(db=db, indicator_id=indicator_id)
+

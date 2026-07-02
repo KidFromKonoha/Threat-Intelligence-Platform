@@ -579,3 +579,27 @@ backend/app/features/dashboard/
 - **Zero Business Logic Duplication**: Data related to Indicators, Feeds, Assets, and Investigations are queried dynamically using their original models. No cached summary tables or materialized views were introduced, fulfilling the requirement for real-time overview using existing records.
 - **Missing Optional Data Handling**: The service returns empty collections (`[]`) and zero counts (`0`) instead of failing when requested analytics categories (e.g., active watchlist matches) do not possess underlying data, keeping the front-end consumers stable.
 - **Dependency Re-use**: Used the existing `IndicatorSummary` and `EntitySummary` schemas from the search feature to provide recent intelligence payloads.
+
+## Phase 10 — Entity Detail APIs
+
+### New Files
+
+```
+backend/app/features/entity_details/
+  __init__.py
+  router.py
+  schemas.py
+  service.py
+```
+
+### API Layer Structure
+
+- **Schemas (`backend/app/features/entity_details/schemas.py`)**: Extends base schemas to create comprehensive detail representations for `Indicator`, `ThreatActor`, `Malware`, `Campaign`, and `Vulnerability`. Each model embeds the entity's direct attributes along with eager-loaded collections of its relationships, producing single-payload views for frontend pages.
+- **Service (`backend/app/features/entity_details/service.py`)**: Centralizes the logic to construct entity detail payloads. Implements `selectinload` on relationships uniformly. Re-uses `CorrelationService` logic for complex Indicator relationships and extracts timelines automatically from creation strings and connected entity records.
+- **Router (`backend/app/features/entity_details/router.py`)**: Exposes five GET endpoints (`/indicators/{id}`, `/threat-actors/{id}`, `/malware/{id}`, `/campaigns/{id}`, `/vulnerabilities/{id}`) directly from the root API router namespace, avoiding cross-contamination inside feature-specific search routers.
+
+### Architectural Decisions
+
+- **Combined Router Space**: Rather than placing the detail endpoints inside five separate routers, they were unified into `entity_details_router`. This simplifies dependency imports and centralizes detail construction without altering the scope of previously developed decoupled feature modules (like `investigations` or `feeds`).
+- **Reuse of CorrelationService**: `get_indicator` directly calls `CorrelationService.get_relationships` and `CorrelationService.get_related_indicators` to retrieve related intel efficiently instead of duplicating the logic, maintaining DRY principles.
+- **Entity Agnostic Timestamp Timelines**: Synthesized `TimelineEvent` objects by capturing the entity's `created_at` date, and interleaving them chronologically with events from linked entity records (such as `campaign_linked`, `threat_actor_linked`, and `enrichment_executed`).
