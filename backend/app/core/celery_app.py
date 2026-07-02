@@ -25,7 +25,15 @@ celery_app.conf.update(
     },
 )
 
-# Feature task modules are auto-discovered by their feature package path,
-# e.g. app.features.<feature>.tasks. None exist yet in Phase 1.
-celery_app.autodiscover_tasks(["app.features"], related_name="tasks")
+import pkgutil
+import app.features
+
+# Dynamically discover all feature packages (e.g. app.features.feeds, app.features.enrichment)
+# so Celery can correctly find their tasks.py modules.
+feature_packages = [
+    f"app.features.{module_info.name}"
+    for module_info in pkgutil.iter_modules(app.features.__path__)
+    if module_info.ispkg
+]
+celery_app.autodiscover_tasks(feature_packages, related_name="tasks")
 

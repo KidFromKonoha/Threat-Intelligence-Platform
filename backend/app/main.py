@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api_v1 import api_router
 from app.core.config import settings
+from app.core.celery_app import celery_app  # noqa: F401 - Initialize celery app with Redis config
+from app.api_v1 import api_router
 from app.core.logging import configure_logging, get_logger
 
 configure_logging()

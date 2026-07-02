@@ -515,3 +515,42 @@ backend/app/features/correlation/
 ### Known Constraint (inherited from Phase 5)
 
 > The `uselist=False` gotcha documented in Phase 5 applies here too. The `_coerce()` helper handles it consistently throughout the service. Real fix requires updating Phase 2 model type hints — out of scope.
+
+---
+
+## Phase 7 — Intelligence Enrichment
+
+### New Files
+
+```
+backend/app/features/enrichment/
+  __init__.py
+  models.py       # EnrichmentResult
+  provider_base.py# BaseEnrichmentProvider, EnrichmentResultData
+  registry.py     # EnrichmentProviderRegistry (decorator @enrichment_registry.register)
+  schemas.py      # EnrichmentSummary, EnrichmentStatusResponse
+  service.py      # EnrichmentService
+  tasks.py        # Celery task run_enrichment
+  router.py       # POST /indicators/{id}/enrich, GET /indicators/{id}/enrichment
+  providers/
+    __init__.py
+    dummy.py      # DummyEnrichmentProvider
+backend/alembic/versions/
+  ea271c0b7cde_enrichment_engine.py  # Migration for enrichment_results table
+```
+
+### Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/indicators/{id}/enrich` | Dispatches an asynchronous celery task for enrichment. Returns HTTP 202 Accepted. |
+| `GET` | `/api/v1/indicators/{id}/enrichment` | Returns execution history and status from all providers that ran for this indicator. |
+
+### Architectural Decisions
+
+- **Provider Architecture**: Enrichment is structured as an extensible provider framework. Each provider must subclass `BaseEnrichmentProvider`, define its `provider_name` and `supported_indicator_types`, and implement `enrich()`. This mimics the Phase 3A collector framework for straightforward extension.
+- **Auto-Discovery Registry**: The `EnrichmentProviderRegistry` uses a class decorator (`@enrichment_registry.register`) and `pkgutil.iter_modules` to dynamically load and register providers in `providers/` without hardcoded imports.
+- **Asynchronous Execution via Celery**: The `POST /enrich` endpoint is non-blocking. It calls `run_enrichment.delay(indicator_id)`, which runs synchronously inside a Celery worker.
+- **Independent Provider Execution**: `EnrichmentService.run_enrichment_sync()` iterates through all registered providers that support the indicator's type. It wraps each provider execution in a `try...except` block, ensuring that if one provider fails (e.g., timeout or bad response), it records the failure in the database and proceeds to the next provider. No provider can break the workflow.
+- **Zero Coupling with Core Models**: `EnrichmentResult` has a foreign key to `indicators.id`, but no `back_populates` was added to `Indicator`. This conforms to the non-goal of modifying existing models unnecessarily and avoids bloated JOIN queries when querying indicators.
+- **State Transition Logging**: An `EnrichmentResult` is created in `PENDING` state right before a provider executes. Upon completion, the row is updated to either `SUCCESS` or `FAILED` alongside the elapsed duration. This ensures visibility even if a worker crashes mid-execution.

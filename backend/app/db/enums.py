@@ -107,5 +107,11 @@ class CommentEntityType(str, enum.Enum):
     CAMPAIGN = "campaign"
     VULNERABILITY = "vulnerability"
     INVESTIGATION = "investigation"
-    REPORT = "report"
     ASSET = "asset"
+
+
+class EnrichmentStatus(str, enum.Enum):
+    PENDING = "pending"
+    SUCCESS = "success"
+    FAILED = "failed"
+
