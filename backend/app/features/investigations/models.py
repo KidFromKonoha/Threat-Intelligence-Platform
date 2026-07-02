@@ -48,32 +48,32 @@ class Investigation(Base, TimestampMixin):
     )
 
     # ── Relationships ─────────────────────────────────────────────────────────
-    indicators: Mapped[list] = relationship(
+    indicators: Mapped[list["Indicator"]] = relationship(
         "Indicator",
         secondary="investigation_indicator",
         back_populates="investigations",
     )
-    threat_actors: Mapped[list] = relationship(
+    threat_actors: Mapped[list["ThreatActor"]] = relationship(
         "ThreatActor",
         secondary="investigation_threat_actor",
         back_populates="investigations",
     )
-    malware: Mapped[list] = relationship(
+    malware: Mapped[list["Malware"]] = relationship(
         "Malware",
         secondary="investigation_malware",
         back_populates="investigations",
     )
-    campaigns: Mapped[list] = relationship(
+    campaigns: Mapped[list["Campaign"]] = relationship(
         "Campaign",
         secondary="investigation_campaign",
         back_populates="investigations",
     )
-    assets: Mapped[list] = relationship(
+    assets: Mapped[list["Asset"]] = relationship(
         "Asset",
         secondary="investigation_asset",
         back_populates="investigations",
     )
-    comments: Mapped[list] = relationship(
+    comments: Mapped[list["Comment"]] = relationship(
         "Comment",
         back_populates="investigation",
         cascade="all, delete-orphan",

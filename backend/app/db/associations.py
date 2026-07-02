@@ -6,7 +6,7 @@ Each table uses UUID foreign keys matching the primary keys of the related
 entities.  No ORM classes are defined here — only plain Table objects.
 """
 
-from sqlalchemy import Column, ForeignKey, Table, Text
+from sqlalchemy import Column, ForeignKey, Table, Text, DateTime, func
 
 from app.db.session import Base
 
@@ -172,6 +172,7 @@ investigation_indicator = Table(
     Base.metadata,
     Column("investigation_id", Text, ForeignKey("investigations.id", ondelete="CASCADE"), primary_key=True),
     Column("indicator_id", Text, ForeignKey("indicators.id", ondelete="CASCADE"), primary_key=True),
+    Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
 )
 
 investigation_threat_actor = Table(
