@@ -475,4 +475,43 @@ backend/alembic/versions/
 
 > The `Indicator.*` relationships (feeds, malware, threat_actors, etc.) are all `uselist=False` due to the unparameterised `Mapped[list]` type hint in the Phase 2 ORM models. Each relationship currently returns at most one related entity. Fixing this to return proper many-to-many collections requires parameterising the type hints (e.g. `Mapped[list["Feed"]]`) in the Phase 2 models — this is safe and non-breaking but out of scope for Phase 5.
 
+---
 
+## Phase 6 — Correlation Engine
+
+### New Files
+
+```
+backend/app/features/correlation/
+  __init__.py
+  schemas.py    # IndicatorAnchor, entity Ref schemas, RelationshipsResponse, RelatedIndicatorsResponse
+  service.py    # CorrelationService
+  router.py     # GET /indicators/{id}/relationships, GET /indicators/{id}/related
+```
+
+### Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/indicators/{id}/relationships` | Full relationship graph for one indicator |
+| `GET` | `/api/v1/indicators/{id}/related` | Ranked similar indicators by shared entities |
+
+### Architectural Decisions
+
+- **Dedicated feature package**: `app/features/correlation/` owns all correlation logic. No changes to existing phases. The router is mounted on the `/indicators` prefix (same as the Phase 5 indicators router) so the URLs are `GET /indicators/{id}/relationships` and `GET /indicators/{id}/related`.
+
+- **`get_relationships()` — N+1-free loading**: The anchor indicator is fetched once with `selectinload` for all 6 relationship types (feeds, malware, campaigns, threat_actors, techniques, reports). Vulnerabilities are not stored directly on `Indicator`; they are reached via the indicator's campaigns. A second batch `selectinload(Campaign.vulnerabilities)` is issued only when the indicator has campaigns, keeping the total to at most 2 SELECT IN queries for this case.
+
+- **`get_related_indicators()` — single candidate query**: Related indicators are discovered with one SQL query using `OR`'d `EXISTS` subqueries — one per relationship category (malware, campaigns, threat_actors, reports, feeds). The candidates are loaded with `selectinload` for the same 5 categories so all scoring data is in memory. Scoring (shared_count) and SharedContext construction happen in Python in one pass — zero extra DB queries.
+
+- **`_coerce_rel()` re-implemented locally as `_coerce()`**: Phase 2 models use unparameterised `Mapped[list]`, causing SQLAlchemy to infer `uselist=False`. The correlation service normalises every relationship attribute to a list via `_coerce()` before iteration, mirroring the pattern established in Phase 5.
+
+- **Ranking**: Results from `get_related_indicators()` are sorted by `shared_count` descending in Python after scoring. `limit` (1–100, default 25) is applied after sorting.
+
+- **`SharedContext`**: The response includes a `shared_context` object per related indicator that lists the *names* (not just IDs) of each shared entity category. This is resolved from already-in-memory selectinload data — no extra queries.
+
+- **Logging**: Both service methods log correlation request ID, per-category counts (for relationships) or candidate/returned counts (for related), and wall-clock duration.
+
+### Known Constraint (inherited from Phase 5)
+
+> The `uselist=False` gotcha documented in Phase 5 applies here too. The `_coerce()` helper handles it consistently throughout the service. Real fix requires updating Phase 2 model type hints — out of scope.
