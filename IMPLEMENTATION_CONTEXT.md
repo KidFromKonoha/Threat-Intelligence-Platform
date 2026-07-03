@@ -782,3 +782,16 @@ frontend/src/
 ### Architectural Decisions
 - Used \echarts\ to natively map \DailyCount\ timelines inside a ResponsiveContainer avoiding DOM manipulation.
 - Split queries by widget instead of a monolith query. This keeps individual cards responsive, allows independent error/loading boundaries, and strictly bounds payload sizes directly matching the microservice structure.
+
+
+## Frontend Phase F4
+
+### Search Architecture Implemented
+- **Feature isolation**: Kept search logic in eatures/search mapping to /api/v1/search.
+- **Custom debounce**: Added useDebounce hook for user input to prevent excessive polling.
+- **TanStack Query**: Implemented caching, background refetching and explicit loading states tied directly to the debouncedSearchTerm.
+
+### Architectural Decisions
+- Used a monolithic payload GlobalSearchResult rather than waterfalling individual APIs (e.g. searching malware, then indicators). This perfectly reflects the openapi.json contract which returns a unified hit object.
+- Re-declared schema types inside the search domain rather than deep linking to the dashboard domain to enforce boundary separation.
+- Display cards condense descriptions to 1 line, prioritizing information density over large padded white space to meet analyst expectations.
