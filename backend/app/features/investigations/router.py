@@ -26,10 +26,14 @@ def get_investigations(
     return InvestigationService.get_investigations(db, skip=skip, limit=limit)
 
 
+from app.features.auth.dependencies import require_analyst
+from app.features.users.models import User
+
 @router.post("", response_model=InvestigationResponse, status_code=status.HTTP_201_CREATED)
 def create_investigation(
     inv_in: InvestigationCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
 ):
     """Create a new investigation."""
     return InvestigationService.create_investigation(db, inv_in)
@@ -48,7 +52,8 @@ def get_investigation(
 def update_investigation(
     investigation_id: str,
     inv_in: InvestigationUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
 ):
     """Update an investigation."""
     return InvestigationService.update_investigation(db, investigation_id, inv_in)
@@ -57,7 +62,8 @@ def update_investigation(
 @router.delete("/{investigation_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_investigation(
     investigation_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
 ):
     """Delete an investigation."""
     InvestigationService.delete_investigation(db, investigation_id)
@@ -67,7 +73,8 @@ def delete_investigation(
 def add_indicator(
     investigation_id: str,
     indicator_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
 ):
     """Link an indicator to an investigation."""
     InvestigationService.add_indicator(db, investigation_id, indicator_id)
@@ -77,7 +84,8 @@ def add_indicator(
 def remove_indicator(
     investigation_id: str,
     indicator_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
 ):
     """Remove an indicator from an investigation."""
     InvestigationService.remove_indicator(db, investigation_id, indicator_id)

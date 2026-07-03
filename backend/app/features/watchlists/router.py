@@ -21,8 +21,15 @@ def list_watchlists(db: Session = Depends(get_db)):
     return WatchlistService.get_all(db)
 
 
+from app.features.auth.dependencies import require_analyst
+from app.features.users.models import User
+
 @router.post("", response_model=WatchlistResponse, status_code=status.HTTP_201_CREATED)
-def create_watchlist(data: WatchlistCreate, db: Session = Depends(get_db)):
+def create_watchlist(
+    data: WatchlistCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     """Create a new watchlist."""
     return WatchlistService.create(db, data)
 
@@ -46,20 +53,34 @@ def get_watchlist(watchlist_id: str, db: Session = Depends(get_db)):
 
 
 @router.put("/{watchlist_id}", response_model=WatchlistResponse)
-def update_watchlist(watchlist_id: str, data: WatchlistUpdate, db: Session = Depends(get_db)):
+def update_watchlist(
+    watchlist_id: str, 
+    data: WatchlistUpdate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     """Update a watchlist."""
     return WatchlistService.update(db, watchlist_id, data)
 
 
 @router.delete("/{watchlist_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_watchlist(watchlist_id: str, db: Session = Depends(get_db)):
+def delete_watchlist(
+    watchlist_id: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     """Delete a watchlist."""
     WatchlistService.delete(db, watchlist_id)
     return None
 
 
 @router.post("/{watchlist_id}/evaluate", response_model=list[WatchlistMatchResponse])
-def evaluate_watchlist(watchlist_id: str, indicator_id: str, db: Session = Depends(get_db)):
+def evaluate_watchlist(
+    watchlist_id: str, 
+    indicator_id: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     """Evaluate a specific indicator against the watchlists."""
     # Note: Although the endpoint implies evaluating a single watchlist, 
     # it's usually better to evaluate an indicator against all active watchlists.

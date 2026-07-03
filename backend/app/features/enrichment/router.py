@@ -18,10 +18,14 @@ from app.features.enrichment.tasks import run_enrichment
 router = APIRouter(prefix="/indicators", tags=["Enrichment"])
 
 
+from app.features.auth.dependencies import require_analyst
+from app.features.users.models import User
+
 @router.post("/{indicator_id}/enrich", status_code=status.HTTP_202_ACCEPTED)
 def enrich_indicator(
     indicator_id: str,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
 ) -> dict[str, str]:
     """Manually trigger asynchronous enrichment for a specific indicator."""
     

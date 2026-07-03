@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
+    # Auth
+    SECRET_KEY: str = "super-secret-default-key-please-change-in-prod"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    
     @property
     def DATABASE_URL(self) -> str:
         return (

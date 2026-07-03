@@ -29,23 +29,43 @@ def get_feed(feed_id: str, db: Session = Depends(get_db)):
     return FeedService.get_feed(db, feed_id)
 
 
+from app.features.auth.dependencies import require_analyst
+from app.features.users.models import User
+
 @router.post("", response_model=FeedResponse, status_code=status.HTTP_201_CREATED)
-def create_feed(feed_in: FeedCreate, db: Session = Depends(get_db)):
+def create_feed(
+    feed_in: FeedCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     return FeedService.create_feed(db, feed_in)
 
 
 @router.put("/{feed_id}", response_model=FeedResponse)
-def update_feed(feed_id: str, feed_in: FeedUpdate, db: Session = Depends(get_db)):
+def update_feed(
+    feed_id: str, 
+    feed_in: FeedUpdate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     return FeedService.update_feed(db, feed_id, feed_in)
 
 
 @router.delete("/{feed_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_feed(feed_id: str, db: Session = Depends(get_db)):
+def delete_feed(
+    feed_id: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     FeedService.delete_feed(db, feed_id)
 
 
 @router.post("/{feed_id}/run", status_code=status.HTTP_202_ACCEPTED)
-def run_feed_manual(feed_id: str, db: Session = Depends(get_db)):
+def run_feed_manual(
+    feed_id: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_analyst)
+):
     """Trigger a manual feed run asynchronously."""
     return FeedService.run_feed_manual(db, feed_id)
 

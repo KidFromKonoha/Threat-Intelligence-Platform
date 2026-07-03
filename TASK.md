@@ -1,86 +1,119 @@
 # Current Task
 
-## Phase 13 – Graph API
+## Phase 14 – Authentication & RBAC
 
 ### Objective
 
-Implement a graph API that exposes intelligence relationships for frontend visualization.
+Implement a production-quality authentication and authorization layer for the Threat Intelligence Platform.
 
-The graph must be built entirely from the existing relational database and existing CorrelationService.
+This phase must follow security best practices.
 
-Do not introduce graph databases or duplicate relationship logic.
+Do not implement custom cryptography or homemade authentication mechanisms.
 
 ---
 
-## Graph Model
+## Authentication
 
-Return a graph consisting of:
+Implement:
 
-### Nodes
+- User model
+- User CRUD (admin only where applicable)
+- Login
+- JWT Access Tokens
+- JWT Refresh Tokens
+- Password hashing
 
-Each node must contain:
+Use:
+
+- passlib (bcrypt)
+- python-jose (JWT)
+
+Do not store plaintext passwords.
+
+---
+
+## Authorization
+
+Implement Role-Based Access Control (RBAC).
+
+Roles:
+
+- admin
+- analyst
+- viewer
+
+Permissions:
+
+Admin:
+- Full access
+
+Analyst:
+- Read
+- Create
+- Update
+- Investigations
+- Watchlists
+- Enrichment
+
+Viewer:
+- Read-only
+
+Authorization must be reusable through dependencies.
+
+Do not duplicate permission checks in routers.
+
+---
+
+## User Model
+
+Include:
 
 - id
-- entity_type
-- label
-- metadata
-
-Supported entity types:
-
-- Indicator
-- Malware
-- ThreatActor
-- Campaign
-- MITRETechnique
-- Vulnerability
-- Report
-- Asset
-
----
-
-### Edges
-
-Each edge must contain:
-
-- source
-- target
-- relationship
-- metadata
-
-Relationship names should match existing relationship semantics wherever possible.
+- username
+- email
+- password_hash
+- role
+- is_active
+- created_at
+- updated_at
+- last_login
 
 ---
 
 ## Service Layer
 
-Create GraphService.
+Create AuthService.
 
 Responsibilities:
 
-- build graph
-- transform existing relationships into graph nodes/edges
-- deduplicate nodes
-- deduplicate edges
+- login
+- password verification
+- token generation
+- token refresh
+- current user lookup
 
-Do not perform business logic already implemented elsewhere.
-
-Reuse CorrelationService.
+Business logic belongs here.
 
 ---
 
-## Traversal
+## Security
 
-Support configurable traversal depth:
+Passwords:
 
-depth=1 (default)
+- bcrypt
+- configurable work factor
 
-depth=2
+JWT:
 
-depth=3 (maximum)
+- signed
+- expiration
+- refresh token support
 
-Prevent infinite recursion.
+Never log:
 
-Do not revisit previously explored entities.
+- passwords
+- password hashes
+- JWTs
 
 ---
 
@@ -88,41 +121,46 @@ Do not revisit previously explored entities.
 
 Implement:
 
-GET /graph/indicator/{indicator_id}
+POST /auth/login
 
-GET /graph/threat-actor/{id}
+POST /auth/refresh
 
-GET /graph/malware/{id}
+GET /auth/me
 
-GET /graph/campaign/{id}
+POST /users
 
-GET /graph/investigation/{id}
+GET /users
 
-Query parameters:
+GET /users/{id}
 
-depth=1..3
+PATCH /users/{id}
 
----
-
-## Performance
-
-Avoid recursive ORM loading.
-
-Avoid N+1 queries.
-
-Reuse existing relationship loading.
-
-Deduplicate nodes and edges efficiently.
-
-Graph generation should scale to large datasets.
+DELETE /users/{id}
 
 ---
 
-## Error Handling
+## Dependencies
 
-- 404 for missing entities.
-- 422 for invalid depth.
-- Empty graph rather than null.
+Provide reusable dependencies:
+
+- get_current_user
+- require_admin
+- require_analyst
+- require_viewer
+
+Existing routers should be protected using these dependencies where appropriate.
+
+Do not duplicate authorization logic.
+
+---
+
+## Database
+
+Create proper Alembic migrations.
+
+Seed one initial admin account if required by the specification.
+
+Do not hardcode credentials.
 
 ---
 
@@ -130,11 +168,34 @@ Graph generation should scale to large datasets.
 
 Log:
 
-- root entity
-- graph depth
-- node count
-- edge count
-- generation duration
+- successful login
+- failed login
+- refresh events
+- authorization failures
+
+Never log secrets.
+
+---
+
+## Error Handling
+
+401
+
+- invalid credentials
+- invalid token
+- expired token
+
+403
+
+- insufficient permissions
+
+404
+
+- missing user
+
+422
+
+- validation failures
 
 ---
 
@@ -142,20 +203,21 @@ Log:
 
 Do not implement:
 
-- Neo4j
-- Cypher
-- NetworkX
-- GraphQL
-- Graph analytics
-- Frontend visualization
-- Authentication
+- OAuth
+- SAML
+- LDAP
+- MFA
+- API Keys
+- Session authentication
 
 ---
 
 ## Deliverables
 
-- Graph schemas
-- GraphService
-- Router
-- CorrelationService reuse
-- IMPLEMENTATION_CONTEXT.md update
+- `[x]` User model
+- `[x]` AuthService
+- `[x]` JWT authentication
+- `[x]` RBAC
+- `[x]` Protected routes
+- `[x]` Alembic migration
+- `[x]` IMPLEMENTATION_CONTEXT.md update

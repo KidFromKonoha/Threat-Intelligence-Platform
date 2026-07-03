@@ -24,6 +24,7 @@ from app.features.assets.models import Asset  # noqa: F401
 from app.features.investigations.models import Investigation  # noqa: F401
 from app.features.watchlists.models import Watchlist  # noqa: F401
 from app.features.reports.models import Comment, Report  # noqa: F401
+from app.features.users.models import User  # noqa: F401
 
 
 config = context.config

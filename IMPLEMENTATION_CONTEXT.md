@@ -677,3 +677,40 @@ backend/app/features/graph/
 - **Complete Native Graph Execution**: Evaluated deep relational graphs purely utilizing PostgreSQL relational lookups completely eliminating secondary infrastructure components (like Neo4j) to prevent database desynchronization.
 - **Algorithmic Optimizations (Zero N+1)**: Developed a BFS algorithm leveraging bulk loading mapping tables rather than looping queries, meaning traversal to 1,000 sub-nodes at depth=2 utilizes essentially 1 query mapping table, resulting in near-instant traversal latency.
 - **Business Logic Non-Duplication**: Reused existing cross-correlation mechanisms explicitly, loading virtual vulnerabilities for Indicator graphs directly through the pre-built `CorrelationService`.
+
+## Phase 14 — Authentication & Role-Based Access Control (RBAC)
+
+### New Files
+```
+backend/app/features/users/
+  models.py
+  schemas.py
+  service.py
+  router.py
+  
+backend/app/features/auth/
+  dependencies.py
+  router.py
+  schemas.py
+  security.py
+```
+
+### Architecture Updates
+
+- **Dependencies**: 
+  - `bcrypt==3.2.2` (downgraded for `passlib` compatibility).
+  - `passlib[bcrypt]==1.7.4`
+  - `python-jose[cryptography]==3.3.0`
+  - `python-multipart==0.0.9` (required for FastAPI OAuth2 login forms).
+  - `email-validator==2.1.1` (required for Pydantic's `EmailStr`).
+
+- **JWT Authentication**: 
+  - Standard OAuth2 password flow with `Bearer` access tokens.
+  - Implemented access and refresh tokens.
+  - Handled in `AuthService` and `security.py`.
+
+- **RBAC**:
+  - `admin`, `analyst`, and `viewer` roles.
+  - Granular `require_admin`, `require_analyst`, and `require_viewer` dependencies enforcing strictly layered trust zones.
+  - Protected routers at the global API (`api_v1.py`) inclusion layer for GETs (applying `require_viewer`).
+  - Added specific `require_analyst` protections injected inside mutative endpoints (`POST`, `PUT`, `PATCH`, `DELETE`) for features like `Feeds`, `Investigations`, `Enrichment`, and `Watchlists`.
