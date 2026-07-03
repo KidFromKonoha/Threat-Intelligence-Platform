@@ -1,13 +1,22 @@
+const ACCESS_TOKEN_KEY = 'tip_access_token';
+const REFRESH_TOKEN_KEY = 'tip_refresh_token';
+
 export const tokenStorage = {
   getToken: (): string | null => {
-    return localStorage.getItem('tip_access_token');
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
   },
   
-  setToken: (token: string): void => {
-    localStorage.setItem('tip_access_token', token);
+  getRefreshToken: (): string | null => {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
   },
   
-  clearToken: (): void => {
-    localStorage.removeItem('tip_access_token');
+  setTokens: (accessToken: string, refreshToken: string): void => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  },
+  
+  clearTokens: (): void => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 };

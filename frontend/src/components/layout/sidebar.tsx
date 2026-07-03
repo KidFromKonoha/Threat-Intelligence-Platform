@@ -1,9 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MAIN_NAVIGATION, BOTTOM_NAVIGATION } from '../../config/navigation';
 import { SidebarItem } from './sidebar-item';
 import { LogOut, User } from 'lucide-react';
+import { useAuth } from '../../hooks/use-auth';
 
 export const Sidebar: React.FC = () => {
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <div className="w-64 h-full border-r border-border bg-card flex flex-col">
       {/* Brand */}
@@ -31,13 +41,16 @@ export const Sidebar: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground">
             <User className="w-4 h-4" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-medium text-foreground">Current User</span>
-            <span className="text-xs">SOC Analyst</span>
+          <div className="flex flex-col overflow-hidden">
+            <span className="font-medium text-foreground truncate">{user?.username || 'Current User'}</span>
+            <span className="text-xs truncate">{user?.role === 'admin' ? 'Administrator' : 'SOC Analyst'}</span>
           </div>
         </div>
         
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
+        >
           <LogOut className="w-4 h-4" />
           <span>Logout</span>
         </button>

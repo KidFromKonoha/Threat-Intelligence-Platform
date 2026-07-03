@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { NavigationItem } from '../../config/navigation';
+import type { NavigationItem } from '@/config/navigation';
 
 interface SidebarItemProps {
   item: NavigationItem;

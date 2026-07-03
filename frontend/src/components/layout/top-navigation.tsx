@@ -1,7 +1,14 @@
 import React from 'react';
-import { Bell, Moon, Search, Sun, User } from 'lucide-react';
+import { Bell, Moon, Sun, Search, User } from 'lucide-react';
+import { useTheme } from '../../providers/theme-provider';
 
 export const TopNavigation: React.FC = () => {
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <header className="h-14 border-b border-border bg-card px-6 flex items-center justify-between">
       {/* Search Placeholder */}
@@ -16,8 +23,15 @@ export const TopNavigation: React.FC = () => {
 
       {/* Actions */}
       <div className="flex items-center gap-4">
-        <button className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-secondary">
-          <Moon className="w-4 h-4" />
+        <button 
+          onClick={toggleTheme}
+          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-secondary"
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4" />
+          ) : (
+            <Moon className="w-4 h-4" />
+          )}
         </button>
         <button className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-secondary relative">
           <Bell className="w-4 h-4" />

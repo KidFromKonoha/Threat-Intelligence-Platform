@@ -748,3 +748,20 @@ frontend/src/
 - Removed obsolete scaffold files (pp-layout.tsx, pi-client.ts, dashboard-page.tsx, etc.).
 - Strengthened navigation typing by replacing ElementType with LucideIcon.
 - Introduced FRONTEND_ARCHITECTURE.md as the permanent architectural rulebook for the frontend.
+
+## Frontend Phase F2
+
+### Authentication Implementation
+- **JWT & Persistent Session**: Implemented login flow hitting /auth/login and /auth/me, securely tracking ccess_token and efresh_token in a decoupled 	oken-storage provider.
+- **Robust Axios Interceptors**: Created a queueing interceptor flow that handles 401s, refreshes the token natively, flushes the queue, and seamlessly resumes pending requests without terminating the user session prematurely.
+- **Event-Driven Decoupling**: Utilized AUTH_EVENTS.UNAUTHORIZED to separate the framework-agnostic Axios interceptor layer from the React AuthProvider, ensuring safe state tearing down on unrecoverable 401.
+- **Strict UI Validation**: LoginPage is powered by eact-hook-form and zod, adhering strictly to the enterprise-dark aesthetic rules.
+- **Routing**: Fortified ProtectedRoute to perform URL capture and redirecting back post-login.
+
+
+## F2 Runtime Cleanup
+
+### Improvements
+- **Theme Toggle**: Implemented full theme toggling supporting Light and Dark modes. The application defaults to Dark mode, utilizing a custom \ThemeProvider\ injected at the root layout and local storage persistence to persist user preferences. To avoid hydration flicker, an inline script initializes the HTML \dark\ class immediately before React mounts.
+- **Logout Integration**: Wired the existing logout button in the sidebar to the \useAuth()\ hook. Pressing logout now correctly invokes the framework-agnostic logout layer (clearing memory user variables, removing tokens from local storage, wiping React Query cache), followed immediately by a manual navigation to \/login\.
+
