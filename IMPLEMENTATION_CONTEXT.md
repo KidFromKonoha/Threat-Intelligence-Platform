@@ -765,3 +765,20 @@ frontend/src/
 - **Theme Toggle**: Implemented full theme toggling supporting Light and Dark modes. The application defaults to Dark mode, utilizing a custom \ThemeProvider\ injected at the root layout and local storage persistence to persist user preferences. To avoid hydration flicker, an inline script initializes the HTML \dark\ class immediately before React mounts.
 - **Logout Integration**: Wired the existing logout button in the sidebar to the \useAuth()\ hook. Pressing logout now correctly invokes the framework-agnostic logout layer (clearing memory user variables, removing tokens from local storage, wiping React Query cache), followed immediately by a manual navigation to \/login\.
 
+
+
+## Frontend Phase F3
+
+### New Dashboard Structure
+- **Types**: Extracted exact schemas from OpenAPI specification representing DashboardOverviewResponse, DashboardOrganizationResponse, DashboardThreatActivityResponse, DashboardFeedStatusResponse, and DashboardRecentIntelligenceResponse.
+- **API integration**: Handled via \dashboardApi\ and connected to React query via \useDashboardOverview\, \useDashboardOrganization\, \useDashboardThreatActivity\, \useDashboardFeedStatus\, \useDashboardRecentIntelligence\.
+- **UI Components**:
+  - \OverviewCard\: KPIs showing totals.
+  - \FeedStatusCard\: Feed operational state with custom color-coded badges.
+  - \OrganizationCard\: Top line organizational specific risks.
+  - \ThreatActivityCard\: Timeline chart mapping indicators per day over a 30 day window utilizing \echarts\.
+  - \RecentIntelligenceCard\: Sorted stream of the freshest indicators, threat actors, campaigns, malware and vulnerabilities mapped with domain icons.
+
+### Architectural Decisions
+- Used \echarts\ to natively map \DailyCount\ timelines inside a ResponsiveContainer avoiding DOM manipulation.
+- Split queries by widget instead of a monolith query. This keeps individual cards responsive, allows independent error/loading boundaries, and strictly bounds payload sizes directly matching the microservice structure.

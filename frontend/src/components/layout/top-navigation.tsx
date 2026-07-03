@@ -12,12 +12,12 @@ export const TopNavigation: React.FC = () => {
   return (
     <header className="h-14 border-b border-border bg-card px-6 flex items-center justify-between">
       {/* Search Placeholder */}
-      <div className="flex items-center max-w-md w-full bg-background border border-border rounded-md px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary transition-shadow">
-        <Search className="w-4 h-4 text-muted-foreground mr-2" />
+      <div className="flex items-center max-w-md w-full bg-background border border-border rounded-md px-3 h-8 focus-within:ring-1 focus-within:ring-primary transition-shadow">
+        <Search className="w-3.5 h-3.5 text-muted-foreground mr-2" />
         <input 
           type="text" 
           placeholder="Search indicators, actors, campaigns..." 
-          className="bg-transparent border-none outline-none w-full text-sm text-foreground placeholder:text-muted-foreground"
+          className="bg-transparent border-none outline-none w-full text-xs text-foreground placeholder:text-muted-foreground"
         />
       </div>
 
