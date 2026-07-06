@@ -1,0 +1,786 @@
+{
+  "CampaignDetailResponse": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Id"
+      },
+      "name": {
+        "type": "string",
+        "title": "Name"
+      },
+      "description": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Description"
+      },
+      "first_seen": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "First Seen"
+      },
+      "last_seen": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Last Seen"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Created At"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Updated At"
+      },
+      "references": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "References"
+      },
+      "threat_actors": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Threat Actors",
+        "default": []
+      },
+      "malware": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Malware",
+        "default": []
+      },
+      "indicators": {
+        "items": {
+          "$ref": "#/components/schemas/IndicatorSummary"
+        },
+        "type": "array",
+        "title": "Indicators",
+        "default": []
+      },
+      "reports": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Reports",
+        "default": []
+      },
+      "timeline": {
+        "items": {
+          "$ref": "#/components/schemas/TimelineEvent"
+        },
+        "type": "array",
+        "title": "Timeline",
+        "default": []
+      }
+    },
+    "type": "object",
+    "required": [
+      "id",
+      "name",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "CampaignDetailResponse"
+  },
+  "IndicatorFullDetailResponse": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Id"
+      },
+      "type": {
+        "type": "string",
+        "title": "Type"
+      },
+      "value": {
+        "type": "string",
+        "title": "Value"
+      },
+      "confidence": {
+        "type": "integer",
+        "title": "Confidence"
+      },
+      "severity": {
+        "type": "string",
+        "title": "Severity"
+      },
+      "risk_score": {
+        "type": "integer",
+        "title": "Risk Score"
+      },
+      "status": {
+        "type": "string",
+        "title": "Status"
+      },
+      "first_seen": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "First Seen"
+      },
+      "last_seen": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Last Seen"
+      },
+      "tags": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Tags"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Created At"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Updated At"
+      },
+      "feed_sources": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Feed Sources",
+        "default": []
+      },
+      "related_indicators": {
+        "items": {
+          "$ref": "#/components/schemas/IndicatorSummary"
+        },
+        "type": "array",
+        "title": "Related Indicators",
+        "default": []
+      },
+      "threat_actors": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Threat Actors",
+        "default": []
+      },
+      "malware": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Malware",
+        "default": []
+      },
+      "campaigns": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Campaigns",
+        "default": []
+      },
+      "vulnerabilities": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Vulnerabilities",
+        "default": []
+      },
+      "assets": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Assets",
+        "default": []
+      },
+      "mitre_techniques": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Mitre Techniques",
+        "default": []
+      },
+      "whois": {
+        "anyOf": [
+          {
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Whois"
+      },
+      "passive_dns": {
+        "anyOf": [
+          {
+            "items": {},
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Passive Dns"
+      },
+      "enrichments": {
+        "items": {
+          "$ref": "#/components/schemas/EnrichmentData"
+        },
+        "type": "array",
+        "title": "Enrichments",
+        "default": []
+      },
+      "timeline": {
+        "items": {
+          "$ref": "#/components/schemas/TimelineEvent"
+        },
+        "type": "array",
+        "title": "Timeline",
+        "default": []
+      },
+      "comments": {
+        "items": {
+          "type": "object"
+        },
+        "type": "array",
+        "title": "Comments",
+        "default": []
+      }
+    },
+    "type": "object",
+    "required": [
+      "id",
+      "type",
+      "value",
+      "confidence",
+      "severity",
+      "risk_score",
+      "status",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "IndicatorFullDetailResponse"
+  },
+  "MalwareDetailResponse": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Id"
+      },
+      "name": {
+        "type": "string",
+        "title": "Name"
+      },
+      "aliases": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Aliases"
+      },
+      "family": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Family"
+      },
+      "category": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Category"
+      },
+      "description": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Description"
+      },
+      "capabilities": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Capabilities"
+      },
+      "persistence": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Persistence"
+      },
+      "communication": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Communication"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Created At"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Updated At"
+      },
+      "campaigns": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Campaigns",
+        "default": []
+      },
+      "threat_actors": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Threat Actors",
+        "default": []
+      },
+      "indicators": {
+        "items": {
+          "$ref": "#/components/schemas/IndicatorSummary"
+        },
+        "type": "array",
+        "title": "Indicators",
+        "default": []
+      },
+      "mitre_techniques": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Mitre Techniques",
+        "default": []
+      },
+      "timeline": {
+        "items": {
+          "$ref": "#/components/schemas/TimelineEvent"
+        },
+        "type": "array",
+        "title": "Timeline",
+        "default": []
+      }
+    },
+    "type": "object",
+    "required": [
+      "id",
+      "name",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "MalwareDetailResponse"
+  },
+  "ThreatActorDetailResponse": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Id"
+      },
+      "name": {
+        "type": "string",
+        "title": "Name"
+      },
+      "aliases": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Aliases"
+      },
+      "description": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Description"
+      },
+      "motivation": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Motivation"
+      },
+      "country": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Country"
+      },
+      "sophistication": {
+        "type": "string",
+        "title": "Sophistication"
+      },
+      "first_seen": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "First Seen"
+      },
+      "last_seen": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Last Seen"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Created At"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Updated At"
+      },
+      "references": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "References"
+      },
+      "campaigns": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Campaigns",
+        "default": []
+      },
+      "malware": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Malware",
+        "default": []
+      },
+      "indicators": {
+        "items": {
+          "$ref": "#/components/schemas/IndicatorSummary"
+        },
+        "type": "array",
+        "title": "Indicators",
+        "default": []
+      },
+      "mitre_techniques": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Mitre Techniques",
+        "default": []
+      },
+      "timeline": {
+        "items": {
+          "$ref": "#/components/schemas/TimelineEvent"
+        },
+        "type": "array",
+        "title": "Timeline",
+        "default": []
+      }
+    },
+    "type": "object",
+    "required": [
+      "id",
+      "name",
+      "sophistication",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "ThreatActorDetailResponse"
+  },
+  "TimelineEvent": {
+    "properties": {
+      "event_type": {
+        "type": "string",
+        "title": "Event Type"
+      },
+      "description": {
+        "type": "string",
+        "title": "Description"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Timestamp"
+      }
+    },
+    "type": "object",
+    "required": [
+      "event_type",
+      "description",
+      "timestamp"
+    ],
+    "title": "TimelineEvent"
+  },
+  "VulnerabilityDetailResponse": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Id"
+      },
+      "cve": {
+        "type": "string",
+        "title": "Cve"
+      },
+      "description": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Description"
+      },
+      "cvss": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Cvss"
+      },
+      "epss": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Epss"
+      },
+      "kev": {
+        "type": "boolean",
+        "title": "Kev"
+      },
+      "exploited": {
+        "type": "boolean",
+        "title": "Exploited"
+      },
+      "patch_available": {
+        "type": "boolean",
+        "title": "Patch Available"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Created At"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Updated At"
+      },
+      "references": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "References"
+      },
+      "threat_actors": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Threat Actors",
+        "default": []
+      },
+      "malware": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Malware",
+        "default": []
+      },
+      "campaigns": {
+        "items": {
+          "$ref": "#/components/schemas/EntitySummary"
+        },
+        "type": "array",
+        "title": "Campaigns",
+        "default": []
+      },
+      "timeline": {
+        "items": {
+          "$ref": "#/components/schemas/TimelineEvent"
+        },
+        "type": "array",
+        "title": "Timeline",
+        "default": []
+      }
+    },
+    "type": "object",
+    "required": [
+      "id",
+      "cve",
+      "kev",
+      "exploited",
+      "patch_available",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "VulnerabilityDetailResponse"
+  }
+}

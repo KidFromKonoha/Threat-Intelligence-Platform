@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SearchBar } from '../components/search-bar';
 import { SearchResults } from '../components/search-results';
 import { useGlobalSearch } from '../hooks/use-search';
@@ -6,8 +7,17 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { AlertCircle } from 'lucide-react';
 
 export const SearchPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchTerm = searchParams.get('q') || '';
+
+  const handleSearchChange = (val: string) => {
+    if (val) {
+      setSearchParams({ q: val }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
   // Debounce the search term to avoid excessive API requests while typing
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -24,7 +34,7 @@ export const SearchPage: React.FC = () => {
         </p>
         <SearchBar 
           value={searchTerm} 
-          onChange={setSearchTerm} 
+          onChange={handleSearchChange} 
           isFetching={isFetching}
         />
       </div>

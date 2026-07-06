@@ -795,3 +795,17 @@ frontend/src/
 - Used a monolithic payload GlobalSearchResult rather than waterfalling individual APIs (e.g. searching malware, then indicators). This perfectly reflects the openapi.json contract which returns a unified hit object.
 - Re-declared schema types inside the search domain rather than deep linking to the dashboard domain to enforce boundary separation.
 - Display cards condense descriptions to 1 line, prioritizing information density over large padded white space to meet analyst expectations.
+
+
+## Frontend Phase F5
+
+### Entity Detail Architecture Implemented
+- **Feature isolation**: Kept entity details logic in eatures/entity-details mapping to /api/v1/indicators/{id}, /api/v1/threat-actors/{id}, etc.
+- **TanStack Query**: Implemented data fetching, caching, and loading state management per entity type.
+- **UI Components**: Built highly reusable React components (EntityHeader, RelationshipList, TimelinePanel, EnrichmentPanel) to enforce a dense, consistent layout across all entity pages.
+- **Routing**: Added dynamic routes in outer.tsx to handle parameter-based entity lookup.
+
+### Architectural Decisions
+- Used feature-sliced design to isolate entity detail logic from dashboard and search.
+- Duplicated shared entity schema types instead of tight-coupling with eatures/search or eatures/dashboard to maintain pure feature isolation.
+- Built a unified RelationshipList component capable of linking across the different entity domain pages.

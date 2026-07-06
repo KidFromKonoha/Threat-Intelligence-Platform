@@ -1,23 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bell, Moon, Sun, Search, User } from 'lucide-react';
 import { useTheme } from '../../providers/theme-provider';
+import { useNavigate } from 'react-router-dom';
 
 export const TopNavigation: React.FC = () => {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const [headerSearch, setHeaderSearch] = useState('');
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && headerSearch.trim()) {
+      const params = new URLSearchParams();
+      params.set('q', headerSearch.trim());
+      navigate(`/search?${params.toString()}`);
+      setHeaderSearch('');
+    }
+  };
+
   return (
     <header className="h-14 border-b border-border bg-card px-6 flex items-center justify-between">
-      {/* Search Placeholder */}
+      {/* Search */}
       <div className="flex items-center max-w-md w-full bg-background border border-border rounded-md px-3 h-8 focus-within:ring-1 focus-within:ring-primary transition-shadow">
         <Search className="w-3.5 h-3.5 text-muted-foreground mr-2" />
         <input 
           type="text" 
           placeholder="Search indicators, actors, campaigns..." 
           className="bg-transparent border-none outline-none w-full text-xs text-foreground placeholder:text-muted-foreground"
+          value={headerSearch}
+          onChange={(e) => setHeaderSearch(e.target.value)}
+          onKeyDown={handleSearch}
         />
       </div>
 

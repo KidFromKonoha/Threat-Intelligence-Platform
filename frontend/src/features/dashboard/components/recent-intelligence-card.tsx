@@ -40,7 +40,7 @@ export const RecentIntelligenceCard: React.FC = () => {
                 {item.icon}
               </div>
               <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm font-medium truncate leading-tight">{item.title}</span>
+                <span className="text-sm font-medium leading-tight break-all line-clamp-2">{item.title}</span>
                 <span className="text-xs text-muted-foreground mt-0.5">{item.type}</span>
               </div>
               <div className="flex flex-col items-end flex-shrink-0 ml-2">

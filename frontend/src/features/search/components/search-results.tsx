@@ -31,7 +31,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ data }) => {
       {data.threat_actors.length > 0 && (
         <ResultSection title="Threat Actors" icon={<Skull className="w-5 h-5" />}>
           {data.threat_actors.map(actor => (
-            <EntityResultCard key={actor.id} item={actor} />
+            <EntityResultCard key={actor.id} item={actor} type="threat_actors" />
           ))}
         </ResultSection>
       )}
@@ -39,7 +39,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ data }) => {
       {data.malware.length > 0 && (
         <ResultSection title="Malware" icon={<Bug className="w-5 h-5" />}>
           {data.malware.map(mw => (
-            <EntityResultCard key={mw.id} item={mw} />
+            <EntityResultCard key={mw.id} item={mw} type="malware" />
           ))}
         </ResultSection>
       )}
@@ -47,7 +47,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ data }) => {
       {data.campaigns.length > 0 && (
         <ResultSection title="Campaigns" icon={<ShieldAlert className="w-5 h-5" />}>
           {data.campaigns.map(camp => (
-            <EntityResultCard key={camp.id} item={camp} />
+            <EntityResultCard key={camp.id} item={camp} type="campaigns" />
           ))}
         </ResultSection>
       )}
@@ -55,7 +55,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ data }) => {
       {data.vulnerabilities.length > 0 && (
         <ResultSection title="Vulnerabilities" icon={<AlertOctagon className="w-5 h-5" />}>
           {data.vulnerabilities.map(vuln => (
-            <EntityResultCard key={vuln.id} item={vuln} />
+            <EntityResultCard key={vuln.id} item={vuln} type="vulnerabilities" />
           ))}
         </ResultSection>
       )}
@@ -63,7 +63,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ data }) => {
       {data.techniques.length > 0 && (
         <ResultSection title="Techniques" icon={<Wrench className="w-5 h-5" />}>
           {data.techniques.map(tech => (
-            <EntityResultCard key={tech.id} item={tech} />
+            <EntityResultCard key={tech.id} item={tech} type="techniques" />
           ))}
         </ResultSection>
       )}
@@ -71,7 +71,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ data }) => {
       {data.reports.length > 0 && (
         <ResultSection title="Reports" icon={<FileText className="w-5 h-5" />}>
           {data.reports.map(rep => (
-            <EntityResultCard key={rep.id} item={rep} />
+            <EntityResultCard key={rep.id} item={rep} type="reports" />
           ))}
         </ResultSection>
       )}
@@ -91,35 +91,53 @@ const ResultSection: React.FC<{ title: string; icon: React.ReactNode; children: 
   </div>
 );
 
+import { Link } from 'react-router-dom';
+
 const IndicatorResultCard: React.FC<{ item: IndicatorSummary }> = ({ item }) => (
-  <Card className="overflow-hidden hover:bg-muted/50 transition-colors">
-    <CardContent className="p-4 flex items-center justify-between">
-      <div className="flex flex-col min-w-0">
-        <span className="text-base font-medium truncate font-mono">{item.value}</span>
-        <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">{item.type}</span>
-      </div>
-      <div className="flex flex-col items-end ml-4 flex-shrink-0">
-        <SeverityBadge severity={item.severity} />
-        <span className="text-xs text-muted-foreground mt-1">Confidence: {item.confidence}%</span>
-      </div>
-    </CardContent>
-  </Card>
+  <Link to={`/entities/indicator/${item.id}`} className="block">
+    <Card className="overflow-hidden hover:bg-muted/50 transition-colors">
+      <CardContent className="p-4 flex items-center justify-between">
+        <div className="flex flex-col min-w-0">
+          <span className="text-base font-medium truncate font-mono">{item.value}</span>
+          <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">{item.type}</span>
+        </div>
+        <div className="flex flex-col items-end ml-4 flex-shrink-0">
+          <SeverityBadge severity={item.severity} />
+          <span className="text-xs text-muted-foreground mt-1">Confidence: {item.confidence}%</span>
+        </div>
+      </CardContent>
+    </Card>
+  </Link>
 );
 
-const EntityResultCard: React.FC<{ item: EntitySummary }> = ({ item }) => (
-  <Card className="overflow-hidden hover:bg-muted/50 transition-colors">
-    <CardContent className="p-4 flex items-center justify-between">
-      <div className="flex flex-col min-w-0 flex-1">
-        <span className="text-base font-medium truncate">{item.name}</span>
-        {item.description ? (
-          <span className="text-sm text-muted-foreground mt-1 line-clamp-1">{item.description}</span>
-        ) : (
-          <span className="text-sm text-muted-foreground mt-1 italic opacity-50">No description provided.</span>
-        )}
-      </div>
-    </CardContent>
-  </Card>
-);
+const EntityResultCard: React.FC<{ item: EntitySummary, type: string }> = ({ item, type }) => {
+  const getLink = () => {
+    switch(type) {
+      case 'threat_actors': return `/entities/threat-actor/${item.id}`;
+      case 'malware': return `/entities/malware/${item.id}`;
+      case 'campaigns': return `/entities/campaign/${item.id}`;
+      case 'vulnerabilities': return `/entities/vulnerability/${item.id}`;
+      default: return '#';
+    }
+  };
+
+  return (
+    <Link to={getLink()} className="block">
+      <Card className="overflow-hidden hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4 flex items-center justify-between">
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-base font-medium truncate">{item.name}</span>
+            {item.description ? (
+              <span className="text-sm text-muted-foreground mt-1 line-clamp-1">{item.description}</span>
+            ) : (
+              <span className="text-sm text-muted-foreground mt-1 italic opacity-50">No description provided.</span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+};
 
 const SeverityBadge: React.FC<{ severity: string }> = ({ severity }) => {
   const norm = severity.toLowerCase();

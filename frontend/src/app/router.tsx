@@ -11,6 +11,13 @@ import { SettingsPage } from '../features/settings/pages/settings-page';
 import { LoginPage } from '../features/auth/pages/login-page';
 import { NotFoundPage } from '../features/errors/pages/not-found-page';
 
+// Entity Detail Pages
+import { IndicatorPage } from '../features/entity-details/pages/indicator-page';
+import { ThreatActorPage } from '../features/entity-details/pages/threat-actor-page';
+import { MalwarePage } from '../features/entity-details/pages/malware-page';
+import { CampaignPage } from '../features/entity-details/pages/campaign-page';
+import { VulnerabilityPage } from '../features/entity-details/pages/vulnerability-page';
+
 export const router = createBrowserRouter([
   {
     path: '/login',
@@ -54,6 +61,26 @@ export const router = createBrowserRouter([
           {
             path: 'settings',
             element: <SettingsPage />,
+          },
+          {
+            path: 'entities/indicator/:id',
+            element: <IndicatorPage />,
+          },
+          {
+            path: 'entities/threat-actor/:id',
+            element: <ThreatActorPage />,
+          },
+          {
+            path: 'entities/malware/:id',
+            element: <MalwarePage />,
+          },
+          {
+            path: 'entities/campaign/:id',
+            element: <CampaignPage />,
+          },
+          {
+            path: 'entities/vulnerability/:id',
+            element: <VulnerabilityPage />,
           },
         ],
       },

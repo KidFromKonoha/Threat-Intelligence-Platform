@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, ScrollRestoration } from 'react-router-dom';
 import { Sidebar } from '../components/layout/sidebar';
 import { TopNavigation } from '../components/layout/top-navigation';
 import { ErrorBoundary } from '../components/feedback/error-boundary';
@@ -16,6 +16,7 @@ export const AppLayout: React.FC = () => {
           </ErrorBoundary>
         </main>
       </div>
+      <ScrollRestoration />
     </div>
   );
 };
