@@ -4,6 +4,7 @@ import { ProtectedRoute } from '../components/layout/protected-route';
 import { DashboardPage } from '../features/dashboard/pages/dashboard-page';
 import { SearchPage } from '../features/search/pages/search-page';
 import { InvestigationsPage } from '../features/investigations/pages/investigations-page';
+import { InvestigationDetailPage } from '../features/investigations/pages/investigation-detail-page';
 import { WatchlistsPage } from '../features/watchlists/pages/watchlists-page';
 import { ReportsPage } from '../features/reports/pages/reports-page';
 import { FeedsPage } from '../features/feeds/pages/feeds-page';
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
           {
             path: 'investigations',
             element: <InvestigationsPage />,
+          },
+          {
+            path: 'investigations/:id',
+            element: <InvestigationDetailPage />,
           },
           {
             path: 'watchlists',
