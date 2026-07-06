@@ -19,6 +19,9 @@ import { MalwarePage } from '../features/entity-details/pages/malware-page';
 import { CampaignPage } from '../features/entity-details/pages/campaign-page';
 import { VulnerabilityPage } from '../features/entity-details/pages/vulnerability-page';
 
+// Graph
+import { GraphPage } from '../features/graph/pages/graph-page';
+
 export const router = createBrowserRouter([
   {
     path: '/login',
@@ -66,6 +69,14 @@ export const router = createBrowserRouter([
           {
             path: 'settings',
             element: <SettingsPage />,
+          },
+          {
+            path: 'threat-graph',
+            element: <GraphPage />,
+          },
+          {
+            path: 'threat-graph/:entityType/:id',
+            element: <GraphPage />,
           },
           {
             path: 'entities/indicator/:id',

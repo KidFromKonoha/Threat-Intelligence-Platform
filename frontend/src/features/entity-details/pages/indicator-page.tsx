@@ -26,6 +26,8 @@ export const IndicatorPage: React.FC = () => {
         confidence={data.confidence}
         status={data.status}
         description={data.type}
+        graphEntityType="indicator"
+        entityId={id}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

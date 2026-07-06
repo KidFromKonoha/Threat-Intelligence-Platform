@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ShieldAlert, Fingerprint, Bug, Skull, AlertOctagon, Activity } from 'lucide-react';
+import { ShieldAlert, Fingerprint, Bug, Skull, AlertOctagon, Activity, Network } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface EntityHeaderProps {
   type: string;
@@ -9,9 +10,12 @@ interface EntityHeaderProps {
   confidence?: number;
   status?: string;
   description?: string | null;
+  /** If provided, shows a "View Graph" button */
+  graphEntityType?: string;
+  entityId?: string;
 }
 
-export const EntityHeader: React.FC<EntityHeaderProps> = ({ type, value, severity, confidence, status, description }) => {
+export const EntityHeader: React.FC<EntityHeaderProps> = ({ type, value, severity, confidence, status, description, graphEntityType, entityId }) => {
   const renderIcon = () => {
     switch (type.toLowerCase()) {
       case 'indicator': return <Fingerprint className="w-8 h-8 text-muted-foreground" />;
@@ -22,6 +26,8 @@ export const EntityHeader: React.FC<EntityHeaderProps> = ({ type, value, severit
       default: return <Activity className="w-8 h-8 text-muted-foreground" />;
     }
   };
+
+  const showGraphLink = graphEntityType && entityId && !['vulnerability', 'report'].includes(graphEntityType);
 
   return (
     <Card className="mb-6">
@@ -40,6 +46,15 @@ export const EntityHeader: React.FC<EntityHeaderProps> = ({ type, value, severit
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {showGraphLink && (
+            <Link
+              to={`/threat-graph/${graphEntityType}/${entityId}`}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-foreground transition-colors border border-border"
+            >
+              <Network className="w-3.5 h-3.5" />
+              View Graph
+            </Link>
+          )}
           {severity && (
             <div className="flex flex-col items-end">
               <span className="text-xs text-muted-foreground uppercase font-medium">Severity</span>
@@ -68,3 +83,4 @@ export const EntityHeader: React.FC<EntityHeaderProps> = ({ type, value, severit
     </Card>
   );
 };
+

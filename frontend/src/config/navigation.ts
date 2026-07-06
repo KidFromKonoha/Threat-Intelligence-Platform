@@ -46,7 +46,6 @@ export const MAIN_NAVIGATION: NavigationItem[] = [
     label: 'Threat Graph',
     path: '/threat-graph',
     icon: Network,
-    disabled: true,
   },
   {
     id: 'watchlists',

@@ -1,7 +1,7 @@
 import React from 'react';
-import { ArrowLeft, Clock, Shield } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import type { InvestigationResponse } from '../types/investigation';
 
 interface Props {
@@ -20,19 +20,29 @@ export const InvestigationHeader: React.FC<Props> = ({ investigation }) => {
           </Button>
           
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className={`w-6 h-6 ${investigation.priority === 'critical' ? 'text-destructive' : investigation.priority === 'high' ? 'text-amber-500' : 'text-emerald-500'}`} />
-              <h1 className="text-2xl font-bold tracking-tight">{investigation.title}</h1>
-              <span className={`text-xs uppercase font-bold px-2.5 py-1 rounded-full tracking-wider ml-2 ${
-                investigation.status === 'open' ? 'bg-primary/20 text-primary' : 
-                investigation.status === 'in_progress' ? 'bg-amber-500/20 text-amber-500' : 
-                'bg-muted text-muted-foreground'
-              }`}>
-                {investigation.status.replace('_', ' ')}
-              </span>
-              <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider bg-secondary px-2.5 py-1 rounded-sm ml-1">
-                {investigation.priority}
-              </span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Shield className={`w-6 h-6 ${investigation.priority === 'critical' ? 'text-destructive' : investigation.priority === 'high' ? 'text-amber-500' : 'text-emerald-500'}`} />
+                <h1 className="text-2xl font-bold tracking-tight">{investigation.title}</h1>
+                <span className={`text-xs uppercase font-bold px-2.5 py-1 rounded-full tracking-wider ml-2 ${
+                  investigation.status === 'open' ? 'bg-primary/20 text-primary' : 
+                  investigation.status === 'in_progress' ? 'bg-amber-500/20 text-amber-500' : 
+                  'bg-muted text-muted-foreground'
+                }`}>
+                  {investigation.status.replace('_', ' ')}
+                </span>
+                <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider bg-secondary px-2.5 py-1 rounded-sm ml-1">
+                  {investigation.priority}
+                </span>
+              </div>
+              
+              <Link
+                to={`/threat-graph/investigation/${investigation.id}`}
+                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 text-foreground transition-colors border border-border"
+              >
+                <Network className="w-4 h-4" />
+                View Graph
+              </Link>
             </div>
             
             {investigation.description && (

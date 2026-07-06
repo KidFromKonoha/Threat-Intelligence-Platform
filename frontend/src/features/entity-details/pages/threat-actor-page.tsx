@@ -22,6 +22,8 @@ export const ThreatActorPage: React.FC = () => {
         type="Threat Actor"
         value={data.name}
         description={data.sophistication}
+        graphEntityType="threat_actor"
+        entityId={id}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

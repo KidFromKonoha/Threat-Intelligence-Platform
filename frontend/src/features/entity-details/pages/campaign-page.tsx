@@ -21,6 +21,8 @@ export const CampaignPage: React.FC = () => {
       <EntityHeader 
         type="Campaign"
         value={data.name}
+        graphEntityType="campaign"
+        entityId={id}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
