@@ -6,6 +6,7 @@ import { SearchPage } from '../features/search/pages/search-page';
 import { InvestigationsPage } from '../features/investigations/pages/investigations-page';
 import { InvestigationDetailPage } from '../features/investigations/pages/investigation-detail-page';
 import { FeedsPage } from '../features/feeds/pages/feeds-page';
+import { FeedDetailPage } from '../features/feeds/pages/feed-detail-page';
 import { SettingsPage } from '../features/settings/pages/settings-page';
 import { LoginPage } from '../features/auth/pages/login-page';
 import { NotFoundPage } from '../features/errors/pages/not-found-page';
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
           {
             path: 'feeds',
             element: <FeedsPage />,
+          },
+          {
+            path: 'feeds/:id',
+            element: <FeedDetailPage />,
           },
           {
             path: 'settings',

@@ -602,3 +602,11 @@ frontend/src/features/graph/
 - Built static/on-the-fly reporting endpoints support (Daily, Weekly, Monthly, Executive).
 - Handled blob downloads for PDF export of reports.
 - Verified against all TS and build constraints.
+
+## Frontend Phase F10
+
+- Feed Management feature isolating API, hooks, components, and types.
+- Reused existing UI components like Card, Button, and layout wrappers.
+- Built comprehensive Feed List and Feed Detail views including run history and statistics.
+- Implemented Enable/Disable and Manual Sync capabilities.
+- Verified against all TS and build constraints.
