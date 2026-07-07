@@ -5,7 +5,6 @@ import { DashboardPage } from '../features/dashboard/pages/dashboard-page';
 import { SearchPage } from '../features/search/pages/search-page';
 import { InvestigationsPage } from '../features/investigations/pages/investigations-page';
 import { InvestigationDetailPage } from '../features/investigations/pages/investigation-detail-page';
-import { ReportsPage } from '../features/reports/pages/reports-page';
 import { FeedsPage } from '../features/feeds/pages/feeds-page';
 import { SettingsPage } from '../features/settings/pages/settings-page';
 import { LoginPage } from '../features/auth/pages/login-page';
@@ -24,6 +23,9 @@ import { GraphPage } from '../features/graph/pages/graph-page';
 // Watchlists
 import { WatchlistsPage } from '../features/watchlists/pages/watchlists-page';
 import { WatchlistDetailPage } from '../features/watchlists/pages/watchlist-detail-page';
+
+// Reports
+import { ReportsPage } from '../features/reports/pages/reports-page';
 
 export const router = createBrowserRouter([
   {

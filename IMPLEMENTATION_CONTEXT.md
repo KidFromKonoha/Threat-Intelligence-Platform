@@ -594,3 +594,11 @@ frontend/src/features/graph/
 - Supported CRUD on watchlists via React Query hooks.
 - Supported Watchlist Matches rendering.
 - Resolved all TypeScript compile-time errors.
+
+## Frontend Phase F9
+
+- Reports feature isolating API, hooks, components, and types.
+- Reused existing UI components like Card, Button, and layout wrappers.
+- Built static/on-the-fly reporting endpoints support (Daily, Weekly, Monthly, Executive).
+- Handled blob downloads for PDF export of reports.
+- Verified against all TS and build constraints.
