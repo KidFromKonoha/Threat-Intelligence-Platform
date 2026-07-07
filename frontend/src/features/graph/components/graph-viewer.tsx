@@ -92,6 +92,15 @@ interface Props {
 
 export const GraphViewer: React.FC<Props> = ({ graph }) => {
   const navigate = useNavigate();
+  const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   const positions = useMemo(
     () => buildLayout(graph.nodes, graph.edges, graph.root_id),
@@ -121,11 +130,11 @@ export const GraphViewer: React.FC<Props> = ({ graph }) => {
         source: ge.source,
         target: ge.target,
         label: ge.relationship,
-        labelStyle: { fill: '#64748b', fontSize: 10 },
-        labelBgStyle: { fill: 'rgba(15,23,42,0.7)' },
+        labelStyle: { fill: 'hsl(var(--muted-foreground))', fontSize: 10 },
+        labelBgStyle: { fill: 'hsl(var(--background))' },
         labelBgPadding: [4, 2] as [number, number],
-        style: { stroke: 'rgba(100,116,139,0.6)', strokeWidth: 1.5 },
-        markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(100,116,139,0.6)' },
+        style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1.5, opacity: 0.6 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: 'hsl(var(--muted-foreground))' },
         animated: ge.source === graph.root_id || ge.target === graph.root_id,
       })),
     [graph]
@@ -164,25 +173,28 @@ export const GraphViewer: React.FC<Props> = ({ graph }) => {
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
         maxZoom={2}
-        style={{ background: 'hsl(var(--background, 222 47% 7%))' }}
+        style={{ background: 'hsl(var(--background))' }}
         proOptions={{ hideAttribution: true }}
       >
-        <Background color="rgba(100,116,139,0.15)" gap={24} variant={BackgroundVariant.Dots} size={1.5} />
+        <Background color={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} gap={24} variant={BackgroundVariant.Dots} size={1.5} />
         <Controls
+          className="graph-controls-custom"
           style={{
-            background: 'rgba(15,23,42,0.85)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
             borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           }}
         />
         <MiniMap
           style={{
-            background: 'rgba(15,23,42,0.85)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
             borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           }}
           nodeColor={n => {
-            const colors: Record<string, string> = {
+            const colorsDark: Record<string, string> = {
               indicator: '#3b82f6',
               threat_actor: '#ef4444',
               malware: '#f97316',
@@ -191,9 +203,19 @@ export const GraphViewer: React.FC<Props> = ({ graph }) => {
               investigation: '#14b8a6',
               report: '#64748b',
             };
-            return colors[(n.data as { entity_type: string }).entity_type] ?? '#64748b';
+            const colorsLight: Record<string, string> = {
+              indicator: '#2563eb',
+              threat_actor: '#b91c1c',
+              malware: '#c2410c',
+              campaign: '#7e22ce',
+              vulnerability: '#a16207',
+              investigation: '#0f766e',
+              report: '#475569',
+            };
+            const palette = isDark ? colorsDark : colorsLight;
+            return palette[(n.data as { entity_type: string }).entity_type] ?? (isDark ? '#64748b' : '#94a3b8');
           }}
-          maskColor="rgba(15,23,42,0.6)"
+          maskColor={isDark ? "rgba(15,23,42,0.6)" : "rgba(255,255,255,0.6)"}
         />
         <GraphLegend />
       </ReactFlow>

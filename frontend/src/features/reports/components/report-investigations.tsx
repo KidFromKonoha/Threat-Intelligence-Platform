@@ -13,7 +13,7 @@ const InvestigationList = ({ title, items }: { title: string; items: Investigati
     {items.length === 0 ? (
       <p className="text-xs text-muted-foreground italic">No investigations.</p>
     ) : (
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2">
         {items.map(inv => (
           <div key={inv.id} className="p-3 bg-secondary/30 rounded-md border border-border flex items-start gap-3">
             <FileSearch className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
@@ -37,7 +37,7 @@ const InvestigationList = ({ title, items }: { title: string; items: Investigati
 
 export const ReportInvestigationsCard: React.FC<Props> = ({ investigations }) => {
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Investigations</CardTitle>

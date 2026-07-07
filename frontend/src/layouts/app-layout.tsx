@@ -8,9 +8,9 @@ export const AppLayout: React.FC = () => {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <TopNavigation />
-        <main className="flex-1 overflow-auto bg-background/50">
+        <main className="flex-1 overflow-auto flex flex-col" role="main">
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>

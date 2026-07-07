@@ -28,7 +28,7 @@ const TopList = ({ title, items }: { title: string; items: TopEntityStats[] }) =
 
 export const ReportThreatIntelligenceCard: React.FC<Props> = ({ intel }) => {
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg">Threat Landscape</CardTitle>
       </CardHeader>

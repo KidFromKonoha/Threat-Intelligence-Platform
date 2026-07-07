@@ -27,7 +27,7 @@ export const OrganizationCard: React.FC = () => {
           </div>
           <span className="text-2xl font-semibold text-destructive">{data.high_risk_asset_matches}</span>
         </div>
-        
+
         <div className="flex flex-col">
           <div className="flex items-center text-muted-foreground mb-1">
             <Eye className="w-4 h-4 mr-2" />
@@ -43,7 +43,7 @@ export const OrganizationCard: React.FC = () => {
           </div>
           <span className="text-2xl font-semibold">{data.supplier_threats}</span>
         </div>
-        
+
         <div className="flex flex-col mt-2">
           <div className="flex items-center text-muted-foreground mb-1">
             <Car className="w-4 h-4 mr-2" />

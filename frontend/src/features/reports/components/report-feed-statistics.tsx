@@ -9,7 +9,7 @@ interface Props {
 
 export const ReportFeedStatisticsCard: React.FC<Props> = ({ stats }) => {
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg">Feed Integration Health</CardTitle>
       </CardHeader>

@@ -7,6 +7,7 @@ import { FeedHistoryTable } from '../components/feed-history-table';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const FeedDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,41 +22,60 @@ export const FeedDetailPage: React.FC = () => {
   }, [statuses, id]);
 
   if (isFeedLoading) {
-    return <div className="p-12 text-center text-muted-foreground animate-pulse">Loading feed details...</div>;
+    return (
+      <div className="flex-1 flex flex-col h-full overflow-y-auto">
+        <div className="px-6 py-4 border-b border-border flex items-center gap-3 bg-card/30 flex-shrink-0">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="p-6 space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (feedError || !feed) {
     return (
-      <div className="p-6">
-        <Button variant="ghost" className="mb-4" onClick={() => navigate('/feeds')}>
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Feeds
-        </Button>
-        <div className="p-12 text-center border border-dashed border-border rounded-lg bg-card/50 text-destructive">
-          Failed to load feed detail.
+      <div className="flex-1 flex flex-col h-full overflow-y-auto">
+        <div className="px-6 py-4 border-b border-border flex-shrink-0">
+          <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate('/feeds')}>
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back to Feeds
+          </Button>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card/50">
+            <p className="text-destructive text-sm font-medium mb-1">Failed to load feed</p>
+            <p className="text-muted-foreground text-xs">The requested feed could not be found or loaded.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full h-full flex flex-col overflow-hidden">
-      <div className="mb-4 flex-shrink-0">
-        <Button variant="ghost" onClick={() => navigate('/feeds')} className="-ml-2 text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="flex-1 flex flex-col h-full overflow-y-auto">
+      {/* Back navigation */}
+      <div className="px-6 py-3 border-b border-border flex-shrink-0 bg-card/30">
+        <Button variant="ghost" size="sm" className="-ml-2 text-muted-foreground hover:text-foreground" onClick={() => navigate('/feeds')}>
+          <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
           Back to Feeds
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Content */}
+      <div className="flex-1 p-6 space-y-4 animate-in fade-in duration-300">
         <FeedHeader feed={feed} />
-        
+
         {statusDetail && (
           <FeedStatistics stats={statusDetail} />
         )}
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Run History</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Run History</CardTitle>
           </CardHeader>
           <CardContent>
             <FeedHistoryTable runs={runs || []} isLoading={isRunsLoading} />

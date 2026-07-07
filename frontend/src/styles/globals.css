@@ -1,36 +1,43 @@
+/* Light theme — refined for enterprise readability */
 @import "tailwindcss";
 @import "./tokens.css";
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 220 14% 96%;
+    /* Slightly warm grey page bg */
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
+    /* Cards are white — lifted above bg */
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 222 47% 11%;
+    --primary: 222 47% 25%;
+    /* Deeper navy primary */
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
+    --secondary: 220 13% 91%;
     --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
+    --muted: 220 13% 91%;
+    --muted-foreground: 215 16% 42%;
+    /* Slightly darker for better contrast */
+    --accent: 220 13% 91%;
     --accent-foreground: 222 47% 11%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
-    --radius: 0.25rem; /* Reduced radius for professional density */
+    --border: 220 13% 84%;
+    /* Visible borders in light mode */
+    --input: 220 13% 84%;
+    --ring: 222 47% 25%;
+    --radius: 0.25rem;
   }
 
   .dark {
     --background: 224 71% 4%;
     --foreground: 213 31% 91%;
-    --card: 224 71% 4%;
+    --card: 222 47% 6%;
+    /* Cards slightly lighter than bg in dark */
     --card-foreground: 213 31% 91%;
-    --popover: 224 71% 4%;
+    --popover: 222 47% 6%;
     --popover-foreground: 215 20.2% 65.1%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 1.2%;
@@ -52,7 +59,52 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased text-sm;
+  }
+
+  /* Ensure scrollbars are styled for both themes */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+
+  /* React Flow Custom Overrides */
+  .react-flow__controls.graph-controls-custom {
+    box-shadow: none;
+  }
+
+  .react-flow__controls.graph-controls-custom .react-flow__controls-button {
+    background: transparent;
+    border-bottom: 1px solid hsl(var(--border));
+    /* fill: hsl(var(--foreground)); */
+    transition: background 0.15s ease;
+  }
+
+  .react-flow__controls.graph-controls-custom .react-flow__controls-button svg,
+  .react-flow__controls.graph-controls-custom .react-flow__controls-button path {
+    fill: black !important;
+    color: black !important;
+  }
+
+  .react-flow__controls.graph-controls-custom .react-flow__controls-button:hover {
+    background: hsl(var(--secondary));
+  }
+
+  .react-flow__controls.graph-controls-custom .react-flow__controls-button:last-child {
+    border-bottom: none;
   }
 }

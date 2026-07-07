@@ -11,36 +11,37 @@ export const FeedsPage: React.FC = () => {
   const { data: feeds, isLoading, error } = useFeeds();
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full h-full flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between mb-8 flex-shrink-0">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto">
+      {/* Page Header */}
+      <div className="px-6 py-4 border-b border-border flex items-center gap-3 bg-card/30 flex-shrink-0">
+        <Database className="w-4 h-4 text-muted-foreground" />
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="p-2 bg-primary/10 rounded-md">
-              <Database className="w-6 h-6 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Feed Management</h1>
-          </div>
-          <p className="text-muted-foreground text-sm ml-11">
-            Monitor and manage intelligence feeds integration.
+          <h1 className="text-base font-semibold tracking-tight">Feed Management</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Monitor and manage intelligence feed integrations
           </p>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-6">
+      {/* Content */}
+      <div className="flex-1 p-6">
         {isLoading ? (
           <FeedSkeleton />
         ) : error ? (
-          <div className="p-12 text-center border border-dashed border-border rounded-lg bg-card/50 text-destructive">
-            Failed to load feeds. {error instanceof Error ? error.message : 'Unknown error occurred.'}
+          <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card/50">
+            <p className="text-destructive text-sm font-medium mb-1">Failed to load feeds</p>
+            <p className="text-muted-foreground text-xs">
+              {error instanceof Error ? error.message : 'Unknown error occurred.'}
+            </p>
           </div>
         ) : !feeds || feeds.length === 0 ? (
           <FeedEmptyState />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-300">
             {feeds.map((feed) => (
-              <FeedCard 
-                key={feed.id} 
-                feed={feed} 
+              <FeedCard
+                key={feed.id}
+                feed={feed}
                 onClick={() => navigate(`/feeds/${feed.id}`)}
               />
             ))}

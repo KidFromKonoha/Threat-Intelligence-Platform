@@ -7,96 +7,103 @@ import { RecentIntelligenceCard } from '../components/recent-intelligence-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Server, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
   return (
-    <div className="flex-1 p-6 overflow-y-auto bg-background text-foreground">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="flex-1 p-6 overflow-y-auto">
+      <div className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Operational workspace and platform overview.
+          <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Operational workspace and platform overview
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Search className="w-4 h-4 mr-2" />
-            Global Search
+        <div className="flex items-center rounded-md border border-border overflow-hidden divide-x divide-border">
+          <Button variant="ghost" size="sm" className="rounded-none border-0 text-muted-foreground hover:text-foreground hover:bg-secondary px-3 h-8" asChild>
+            <Link to="/search" className="flex items-center">
+              <Search className="w-3.5 h-3.5 mr-1.5" />
+              Search
+            </Link>
           </Button>
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            New Investigation
+          <Button size="sm" className="rounded-none border-0 px-3 h-8" asChild>
+            <Link to="/investigations" className="flex items-center">
+              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              New Investigation
+            </Link>
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 max-w-7xl">
-        {/* Top Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-4">
+        {/* Top Row — key metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <OverviewCard />
           <FeedStatusCard />
           <OrganizationCard />
         </div>
 
-        {/* Middle Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+        {/* Middle Row — activity + recent intel */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
             <ThreatActivityCard />
           </div>
-          <div className="md:col-span-1">
+          <div>
             <RecentIntelligenceCard />
           </div>
         </div>
 
-        {/* Bottom Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
+        {/* Bottom Row — quick actions + system status */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
           <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="justify-start">
-                <Plus className="w-4 h-4 mr-2" /> Add Indicator
+            <CardContent className="grid grid-cols-2 gap-2">
+              <Button variant="outline" size="sm" className="justify-start" asChild>
+                <Link to="/search">
+                  <Search className="w-3.5 h-3.5 mr-2" /> Search Indicators
+                </Link>
               </Button>
-              <Button variant="outline" className="justify-start">
-                <Search className="w-4 h-4 mr-2" /> View Watchlists
+              <Button variant="outline" size="sm" className="justify-start" asChild>
+                <Link to="/watchlists">
+                  <ShieldCheck className="w-3.5 h-3.5 mr-2" /> View Watchlists
+                </Link>
               </Button>
-              <Button variant="outline" className="justify-start">
-                <ShieldCheck className="w-4 h-4 mr-2" /> Trigger Enrichment
+              <Button variant="outline" size="sm" className="justify-start" asChild>
+                <Link to="/investigations">
+                  <Plus className="w-3.5 h-3.5 mr-2" /> New Investigation
+                </Link>
               </Button>
-              <Button variant="outline" className="justify-start">
-                <Server className="w-4 h-4 mr-2" /> Manage Feeds
+              <Button variant="outline" size="sm" className="justify-start" asChild>
+                <Link to="/feeds">
+                  <Server className="w-3.5 h-3.5 mr-2" /> Manage Feeds
+                </Link>
               </Button>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">System Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Server className="w-4 h-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium">Core API Database</span>
+              <div className="flex flex-col space-y-3">
+                {[
+                  { label: 'Core API Database', status: 'Operational' },
+                  { label: 'Redis Cache Worker', status: 'Operational' },
+                  { label: 'Background Job Queue', status: 'Operational' },
+                ].map(({ label, status }) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Server className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="text-sm">{label}</span>
+                    </div>
+                    <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-sm">
+                      {status}
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-sm">Operational</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Server className="w-4 h-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium">Redis Cache Worker</span>
-                  </div>
-                  <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-sm">Operational</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Server className="w-4 h-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium">Background Job Queue</span>
-                  </div>
-                  <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-sm">Operational</span>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>

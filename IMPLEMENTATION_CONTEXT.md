@@ -610,3 +610,37 @@ frontend/src/features/graph/
 - Built comprehensive Feed List and Feed Detail views including run history and statistics.
 - Implemented Enable/Disable and Manual Sync capabilities.
 - Verified against all TS and build constraints.
+
+---
+
+## Phase F11 — Product Polish & UX Pass (Complete)
+
+### Summary
+Final product-quality pass performed by a Senior Frontend Engineer role. No new features were added.
+
+### Files Modified
+- `src/styles/globals.css` — Light/dark theme improvement: differentiated card background from page background, improved border visibility, muted foreground contrast, and custom scrollbar styling.
+- `src/components/ui/card.tsx` — Reduced Card padding (p-6→p-4), border-radius (lg→md), CardTitle (text-lg→text-base) for information density per architecture spec.
+- `src/components/ui/skeleton.tsx` — Created proper Skeleton component in the correct location.
+- `src/components/layout/sidebar-item.tsx` — Active state now uses `bg-primary text-primary-foreground` (clearly visible) instead of `bg-secondary` (invisible in dark mode).
+- `src/layouts/app-layout.tsx` — Added `role="main"` for accessibility, fixed overflow model so each page controls its own scrolling, added `ScrollRestoration`.
+- `src/app/router.tsx` — Restored React.lazy code splitting for all pages, removed duplicate `watchlists` route, replaced SuspenseWrapper with a minimal spinner fallback.
+- `src/features/dashboard/pages/dashboard-page.tsx` — Removed artificial max-width constraint, reduced spacing gaps, made Quick Action buttons functional navigation links.
+- `src/features/dashboard/components/overview-card.tsx` — Fixed critical syntax error (duplicate closing brace), improved label density, added `tabular-nums`, error state numbers in destructive color.
+- `src/features/dashboard/components/threat-activity-card.tsx` — Replaced loading text with Skeleton.
+- `src/features/investigations/pages/investigations-page.tsx` — Restored full-width operational layout with proper sticky header, 4-column grid on xl, proper Skeleton loading.
+- `src/features/investigations/pages/investigation-detail-page.tsx` — Restored proper layout (was broken by F11 extra div removal), added back nav, Skeleton loading states, reduced font sizes.
+- `src/features/watchlists/pages/watchlists-page.tsx` — Restored full-width operational layout, moved to sticky header pattern, added aria-labels, 4-column grid.
+- `src/features/reports/pages/reports-page.tsx` — Restored full-width layout, shortened type toggle labels, sticky header pattern.
+- `src/features/feeds/pages/feeds-page.tsx` — Restored full-width layout, 4-column grid on xl, simplified header structure.
+- `src/features/feeds/pages/feed-detail-page.tsx` — Replaced loading text with Skeleton, improved error state, consistent header.
+- `src/features/search/pages/search-page.tsx` — Restored centered layout (appropriate for search), replaced pulse divs with Skeleton.
+- `src/features/settings/pages/settings-page.tsx` — Restored original (F11 had incorrectly wrapped PagePlaceholder in extra divs).
+
+### Design Decisions
+- Pages with operational data (Investigations, Watchlists, Feeds, Reports) use full-width layouts with a sticky header band and `flex-1` content area — no max-width containers.
+- Dashboard uses `flex-1` without max-width — the sidebar already constrains the effective width.
+- Search uses a centered max-width (max-w-3xl) because the search experience should feel focused.
+- Graph page retains its own full-viewport layout unchanged.
+- Entity detail pages retain their `p-6 max-w-7xl` document-style layout.
+
