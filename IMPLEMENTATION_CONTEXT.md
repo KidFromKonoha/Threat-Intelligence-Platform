@@ -555,3 +555,34 @@ backend/alembic/versions/
 - **Independent Provider Execution**: `EnrichmentService.run_enrichment_sync()` iterates through all registered providers that support the indicator's type. It wraps each provider execution in a `try...except` block, ensuring that if one provider fails (e.g., timeout or bad response), it records the failure in the database and proceeds to the next provider. No provider can break the workflow.
 - **Zero Coupling with Core Models**: `EnrichmentResult` has a foreign key to `indicators.id`, but no `back_populates` was added to `Indicator`. This conforms to the non-goal of modifying existing models unnecessarily and avoids bloated JOIN queries when querying indicators.
 - **State Transition Logging**: An `EnrichmentResult` is created in `PENDING` state right before a provider executes. Upon completion, the row is updated to either `SUCCESS` or `FAILED` alongside the elapsed duration. This ensures visibility even if a worker crashes mid-execution.
+
+---
+
+## Frontend Phase F7 — Threat Graph
+
+### New Files
+
+```
+frontend/src/features/graph/
+  api/graph-api.ts
+  components/graph-legend.tsx
+  components/graph-viewer.tsx
+  components/threat-node.tsx
+  hooks/use-graph.ts
+  pages/graph-page.tsx
+  types/graph.ts
+```
+
+### Modified Files
+- `frontend/src/app/router.tsx`
+- `frontend/src/config/navigation.ts`
+- `frontend/src/features/entity-details/components/entity-header.tsx`
+- `frontend/src/features/entity-details/pages/*-page.tsx`
+- `frontend/src/features/investigations/components/investigation-header.tsx`
+
+### Architectural Decisions
+
+- **React Flow Integration**: Used `@xyflow/react` natively for rendering the node/edge graph. Avoided external heavy layout engines (e.g., elkjs/dagre) by writing a simple BFS-based layer calculation layout directly in the viewer component, preserving a small bundle size.
+- **Custom Nodes**: Created `ThreatNode` to render entity icons, severity colors, and labels using the established design system tokens.
+- **Routing**: The graph viewer is hosted at `/threat-graph/:entityType/:id` and accepts parameters so it's fully isolated from the entity detail pages while remaining accessible via "View Graph" buttons on those pages.
+- **API Mapping**: The graph schema uses the endpoints `/api/v1/graph/{entityType}/{id}`.
