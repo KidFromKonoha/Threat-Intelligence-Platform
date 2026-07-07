@@ -586,3 +586,11 @@ frontend/src/features/graph/
 - **Custom Nodes**: Created `ThreatNode` to render entity icons, severity colors, and labels using the established design system tokens.
 - **Routing**: The graph viewer is hosted at `/threat-graph/:entityType/:id` and accepts parameters so it's fully isolated from the entity detail pages while remaining accessible via "View Graph" buttons on those pages.
 - **API Mapping**: The graph schema uses the endpoints `/api/v1/graph/{entityType}/{id}`.
+
+## Frontend Phase F8
+
+- Watchlist feature isolating API, hooks, components, and pages.
+- Reused existing UI components like Card, Button, and layout wrappers.
+- Supported CRUD on watchlists via React Query hooks.
+- Supported Watchlist Matches rendering.
+- Resolved all TypeScript compile-time errors.

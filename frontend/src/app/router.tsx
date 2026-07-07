@@ -5,7 +5,6 @@ import { DashboardPage } from '../features/dashboard/pages/dashboard-page';
 import { SearchPage } from '../features/search/pages/search-page';
 import { InvestigationsPage } from '../features/investigations/pages/investigations-page';
 import { InvestigationDetailPage } from '../features/investigations/pages/investigation-detail-page';
-import { WatchlistsPage } from '../features/watchlists/pages/watchlists-page';
 import { ReportsPage } from '../features/reports/pages/reports-page';
 import { FeedsPage } from '../features/feeds/pages/feeds-page';
 import { SettingsPage } from '../features/settings/pages/settings-page';
@@ -21,6 +20,10 @@ import { VulnerabilityPage } from '../features/entity-details/pages/vulnerabilit
 
 // Graph
 import { GraphPage } from '../features/graph/pages/graph-page';
+
+// Watchlists
+import { WatchlistsPage } from '../features/watchlists/pages/watchlists-page';
+import { WatchlistDetailPage } from '../features/watchlists/pages/watchlist-detail-page';
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +80,14 @@ export const router = createBrowserRouter([
           {
             path: 'threat-graph/:entityType/:id',
             element: <GraphPage />,
+          },
+          {
+            path: 'watchlists',
+            element: <WatchlistsPage />,
+          },
+          {
+            path: 'watchlists/:id',
+            element: <WatchlistDetailPage />,
           },
           {
             path: 'entities/indicator/:id',
