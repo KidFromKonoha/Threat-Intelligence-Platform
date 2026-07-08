@@ -61,22 +61,22 @@ export const DashboardPage: React.FC = () => {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-2">
               <Button variant="outline" size="sm" className="justify-start" asChild>
-                <Link to="/search">
+                <Link to="/search" className="flex items-center">
                   <Search className="w-3.5 h-3.5 mr-2" /> Search Indicators
                 </Link>
               </Button>
               <Button variant="outline" size="sm" className="justify-start" asChild>
-                <Link to="/watchlists">
+                <Link to="/watchlists" className="flex items-center">
                   <ShieldCheck className="w-3.5 h-3.5 mr-2" /> View Watchlists
                 </Link>
               </Button>
               <Button variant="outline" size="sm" className="justify-start" asChild>
-                <Link to="/investigations">
+                <Link to="/investigations" className="flex items-center">
                   <Plus className="w-3.5 h-3.5 mr-2" /> New Investigation
                 </Link>
               </Button>
               <Button variant="outline" size="sm" className="justify-start" asChild>
-                <Link to="/feeds">
+                <Link to="/feeds" className="flex items-center">
                   <Server className="w-3.5 h-3.5 mr-2" /> Manage Feeds
                 </Link>
               </Button>
