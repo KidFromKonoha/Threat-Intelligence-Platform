@@ -3,6 +3,11 @@ import { lazy, Suspense } from 'react';
 import { AppLayout } from '../layouts/app-layout';
 import { ProtectedRoute } from '../components/layout/protected-route';
 import { LoginPage } from '../features/auth/pages/login-page';
+import { Skeleton } from '../components/ui/skeleton';
+import { EntitySkeleton } from '../features/entity-details/components/entity-skeleton';
+import { FeedSkeleton } from '../features/feeds/components/feed-skeleton';
+import { ReportSkeleton } from '../features/reports/components/report-skeleton';
+import { WatchlistSkeleton } from '../features/watchlists/components/watchlist-skeleton';
 
 // Route-level code splitting for better initial load performance
 const DashboardPage = lazy(() => import('../features/dashboard/pages/dashboard-page').then(m => ({ default: m.DashboardPage })));
@@ -32,15 +37,35 @@ const WatchlistDetailPage = lazy(() => import('../features/watchlists/pages/watc
 const ReportsPage = lazy(() => import('../features/reports/pages/reports-page').then(m => ({ default: m.ReportsPage })));
 
 const PageFallback = () => (
-  <div className="flex-1 flex items-center justify-center">
-    <div className="flex flex-col items-center gap-3 text-muted-foreground">
-      <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin opacity-50" />
+  <div className="flex-1 p-6 flex flex-col gap-6 w-full">
+    <div className="flex items-center justify-between">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-32" />
+      </div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="h-32 w-full rounded-xl" />
+    </div>
+    <div className="flex-1">
+      <Skeleton className="h-96 w-full rounded-xl" />
     </div>
   </div>
 );
 
-const Wrap = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<PageFallback />}>{children}</Suspense>
+const EntityFallback = () => <div className="p-6 max-w-7xl mx-auto w-full"><EntitySkeleton /></div>;
+const FeedFallback = () => <div className="flex-1 p-6 w-full"><FeedSkeleton /></div>;
+const WatchlistFallback = () => <div className="flex-1 p-6 w-full"><WatchlistSkeleton /></div>;
+const ReportFallback = () => <div className="flex-1 p-6 w-full"><ReportSkeleton /></div>;
+
+const Wrap = ({ children, fallback }: { children: React.ReactNode, fallback?: React.ReactNode }) => (
+  <Suspense fallback={fallback || <PageFallback />}>{children}</Suspense>
 );
 
 export const router = createBrowserRouter([
@@ -77,19 +102,19 @@ export const router = createBrowserRouter([
           },
           {
             path: 'watchlists',
-            element: <Wrap><WatchlistsPage /></Wrap>,
+            element: <Wrap fallback={<WatchlistFallback />}><WatchlistsPage /></Wrap>,
           },
           {
             path: 'watchlists/:id',
-            element: <Wrap><WatchlistDetailPage /></Wrap>,
+            element: <Wrap fallback={<WatchlistFallback />}><WatchlistDetailPage /></Wrap>,
           },
           {
             path: 'reports',
-            element: <Wrap><ReportsPage /></Wrap>,
+            element: <Wrap fallback={<ReportFallback />}><ReportsPage /></Wrap>,
           },
           {
             path: 'feeds',
-            element: <Wrap><FeedsPage /></Wrap>,
+            element: <Wrap fallback={<FeedFallback />}><FeedsPage /></Wrap>,
           },
           {
             path: 'feeds/:id',
@@ -109,23 +134,23 @@ export const router = createBrowserRouter([
           },
           {
             path: 'entities/indicator/:id',
-            element: <Wrap><IndicatorPage /></Wrap>,
+            element: <Wrap fallback={<EntityFallback />}><IndicatorPage /></Wrap>,
           },
           {
             path: 'entities/threat-actor/:id',
-            element: <Wrap><ThreatActorPage /></Wrap>,
+            element: <Wrap fallback={<EntityFallback />}><ThreatActorPage /></Wrap>,
           },
           {
             path: 'entities/malware/:id',
-            element: <Wrap><MalwarePage /></Wrap>,
+            element: <Wrap fallback={<EntityFallback />}><MalwarePage /></Wrap>,
           },
           {
             path: 'entities/campaign/:id',
-            element: <Wrap><CampaignPage /></Wrap>,
+            element: <Wrap fallback={<EntityFallback />}><CampaignPage /></Wrap>,
           },
           {
             path: 'entities/vulnerability/:id',
-            element: <Wrap><VulnerabilityPage /></Wrap>,
+            element: <Wrap fallback={<EntityFallback />}><VulnerabilityPage /></Wrap>,
           },
           {
             path: '*',
