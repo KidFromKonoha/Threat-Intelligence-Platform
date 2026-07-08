@@ -132,6 +132,34 @@ Additional folders may be introduced when necessary.
 
 ---
 
+# Runtime Architecture
+
+The TIP backend leverages Celery for background processing. The runtime stack consists of:
+- **Backend API (FastAPI)**: Serves synchronous HTTP requests and dispatches background tasks.
+- **Redis**: Acts as the message broker and result backend.
+- **Celery Worker**: Consumes messages from Redis and executes heavy background tasks (e.g., feed collection, intelligence enrichment) asynchronously.
+- **Celery Beat**: A clock process that triggers scheduled tasks (like evaluating due feeds) and pushes them to Redis for the Worker to consume.
+- **PostgreSQL**: The primary database where the Worker stores parsed and correlated intelligence.
+
+# Startup Instructions
+
+The complete runtime stack is fully containerized. To start the entire platform, including the frontend, backend, database, and background workers:
+
+```bash
+cd infrastructure
+docker compose up --build
+```
+
+If you are running the backend locally without Docker Compose, you must manually start all services:
+
+1. **Start Backend API:** `uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
+2. **Start Celery Worker:** `celery -A app.core.celery_app worker --loglevel=info`
+3. **Start Celery Beat:** `celery -A app.core.celery_app beat --loglevel=info`
+
+*(Ensure Redis and PostgreSQL are also running locally or accessible via environment variables)*
+
+---
+
 # Coding Principles
 
 * Write readable code.
