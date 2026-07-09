@@ -17,8 +17,13 @@ export const Sidebar: React.FC = () => {
   return (
     <div className="w-64 h-full border-r border-border bg-card flex flex-col">
       {/* Brand */}
-      <div className="h-14 flex items-center px-6 border-b border-border">
-        <span className="font-semibold text-sm tracking-wide text-foreground">TIP Platform</span>
+      <div className="h-14 flex items-center px-2 border-b border-border gap-3">
+        <img
+          src="https://images.seeklogo.com/logo-png/28/2/maruti-suzuki-india-logo-png_seeklogo-289646.png"
+          alt="Maruti Suzuki"
+          className="h-30 w-auto object-contain"
+        />
+        <span className="font-semibold text-sm tracking-wide text-foreground"><b>THREATSTREAM</b></span>
       </div>
 
       {/* Main Nav */}
@@ -46,8 +51,8 @@ export const Sidebar: React.FC = () => {
             <span className="text-xs truncate">{user?.role === 'admin' ? 'Administrator' : 'SOC Analyst'}</span>
           </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
         >
