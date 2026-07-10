@@ -1,223 +1,264 @@
-# Current Task
+# Frontend Phase F4 — Global Search
 
-## Phase 14 – Authentication & RBAC
+## Business Objective
 
-### Objective
+Implement the primary search experience for the Threat Intelligence Platform.
 
-Implement a production-quality authentication and authorization layer for the Threat Intelligence Platform.
+Search is the analyst's primary workflow.
 
-This phase must follow security best practices.
-
-Do not implement custom cryptography or homemade authentication mechanisms.
+The experience should feel fast, precise, keyboard-friendly, and optimized for investigation.
 
 ---
 
-## Authentication
+# User Story
+
+As a SOC Analyst,
+
+I want to search indicators, malware, campaigns, threat actors and organizations,
+
+so that I can rapidly investigate threats without navigating through multiple pages.
+
+---
+
+# Scope
 
 Implement:
 
-- User model
-- User CRUD (admin only where applicable)
-- Login
-- JWT Access Tokens
-- JWT Refresh Tokens
-- Password hashing
-
-Use:
-
-- passlib (bcrypt)
-- python-jose (JWT)
-
-Do not store plaintext passwords.
+- Global Search page
+- Search input
+- Search filters
+- Search results
+- Result cards/table
+- Pagination (if supported)
+- Loading state
+- Empty state
+- Error state
 
 ---
 
-## Authorization
+# Out of Scope
 
-Implement Role-Based Access Control (RBAC).
+Do NOT implement:
 
-Roles:
-
-- admin
-- analyst
-- viewer
-
-Permissions:
-
-Admin:
-- Full access
-
-Analyst:
-- Read
-- Create
-- Update
-- Investigations
+- Entity Detail pages
+- Investigation creation
 - Watchlists
-- Enrichment
-
-Viewer:
-- Read-only
-
-Authorization must be reusable through dependencies.
-
-Do not duplicate permission checks in routers.
+- Reports
+- Graph visualization
+- Saved searches
+- Search history
+- Autocomplete (unless backend explicitly supports it)
 
 ---
 
-## User Model
+# APIs
 
-Include:
+Read ONLY the Search-related endpoints and schemas from openapi.json.
 
-- id
-- username
-- email
-- password_hash
-- role
-- is_active
-- created_at
-- updated_at
-- last_login
+Consume exactly the documented APIs.
+
+Do NOT invent query parameters.
+
+If search requires pagination, sorting or filtering, implement only what is documented.
+
+If functionality is missing, report it.
 
 ---
 
-## Service Layer
+# Search Experience
 
-Create AuthService.
+The page should consist of:
 
-Responsibilities:
+------------------------------------------------
 
-- login
-- password verification
-- token generation
-- token refresh
-- current user lookup
+Search Bar
 
-Business logic belongs here.
+------------------------------------------------
 
----
+Optional Filters
 
-## Security
+------------------------------------------------
 
-Passwords:
+Search Results
 
-- bcrypt
-- configurable work factor
+------------------------------------------------
 
-JWT:
+Result Summary
 
-- signed
-- expiration
-- refresh token support
+------------------------------------------------
 
-Never log:
+Pagination
 
-- passwords
-- password hashes
-- JWTs
+------------------------------------------------
+
+The search bar should receive immediate focus when opening the page.
 
 ---
 
-## API
+# Search Results
 
-Implement:
+Display results in a dense analyst-friendly layout.
 
-POST /auth/login
+Each result should clearly show:
 
-POST /auth/refresh
+- Primary name/value
+- Entity type
+- Severity (if available)
+- Confidence (if available)
+- Source
+- Last seen
+- Short description
 
-GET /auth/me
+Avoid giant cards.
 
-POST /users
-
-GET /users
-
-GET /users/{id}
-
-PATCH /users/{id}
-
-DELETE /users/{id}
+Prefer compact rows or compact cards.
 
 ---
 
-## Dependencies
+# Filters
 
-Provide reusable dependencies:
+Implement only filters supported by the backend.
 
-- get_current_user
-- require_admin
-- require_analyst
-- require_viewer
+Examples may include:
 
-Existing routers should be protected using these dependencies where appropriate.
+- Entity Type
+- Severity
+- Confidence
+- Source
 
-Do not duplicate authorization logic.
-
----
-
-## Database
-
-Create proper Alembic migrations.
-
-Seed one initial admin account if required by the specification.
-
-Do not hardcode credentials.
+Do not invent filters.
 
 ---
 
-## Logging
+# Components
 
-Log:
+Create reusable components where appropriate.
 
-- successful login
-- failed login
-- refresh events
-- authorization failures
+Examples:
 
-Never log secrets.
+- SearchBar
+- SearchFilters
+- SearchResultCard
+- SearchResultsTable
+- SearchSummary
+- SearchSkeleton
+- SearchEmptyState
 
----
+Business logic belongs inside:
 
-## Error Handling
+features/search/api
 
-401
+features/search/hooks
 
-- invalid credentials
-- invalid token
-- expired token
-
-403
-
-- insufficient permissions
-
-404
-
-- missing user
-
-422
-
-- validation failures
+Presentational components remain stateless.
 
 ---
 
-## Non Goals
+# UX Requirements
 
-Do not implement:
+The search experience should feel:
 
-- OAuth
-- SAML
-- LDAP
-- MFA
-- API Keys
-- Session authentication
+- Immediate
+- Keyboard friendly
+- Responsive
+- Information dense
+
+Typing a search and understanding the results should require minimal clicks.
 
 ---
 
-## Deliverables
+# Accessibility
 
-- `[x]` User model
-- `[x]` AuthService
-- `[x]` JWT authentication
-- `[x]` RBAC
-- `[x]` Protected routes
-- `[x]` Alembic migration
-- `[x]` IMPLEMENTATION_CONTEXT.md update
+Support:
+
+- Keyboard navigation
+- Focus management
+- Proper labels
+- Screen reader compatibility
+
+---
+
+# Performance
+
+Use TanStack Query.
+
+Avoid unnecessary refetches.
+
+Debounce search input if appropriate.
+
+Do not issue excessive API requests while typing.
+
+---
+
+# Architecture
+
+Follow:
+
+- FRONTEND_ARCHITECTURE.md
+- IMPLEMENTATION_CONTEXT.md
+
+Maintain feature isolation.
+
+Strong TypeScript.
+
+No any.
+
+---
+
+# Acceptance Criteria
+
+✓ Backend search API consumed
+
+✓ Live search results
+
+✓ Loading state
+
+✓ Empty state
+
+✓ Error state
+
+✓ Responsive
+
+✓ Enterprise appearance
+
+✓ No fake data
+
+---
+
+# Definition of Done
+
+A phase is NOT complete until:
+
+✓ Implementation complete
+
+✓ Phase Review Report generated
+
+✓ tsc -b passes
+
+✓ vite build passes
+
+✓ npm run dev runs
+
+✓ Manual runtime verification completed
+
+✓ Search works against live backend APIs
+
+✓ All documented filters function correctly
+
+---
+
+# Documentation
+
+Append ONLY:
+
+## Frontend Phase F4
+
+to IMPLEMENTATION_CONTEXT.md.
+
+Update FRONTEND_ARCHITECTURE.md only if a genuine architectural convention changes.
+
+---
+
+# Stop Condition
+
+Stop immediately after completing Phase F4.

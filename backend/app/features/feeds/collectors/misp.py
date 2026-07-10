@@ -3,6 +3,7 @@
 import json
 import logging
 import ssl
+import time
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -11,7 +12,7 @@ from datetime import datetime, timezone
 
 from app.features.feeds.base_collector import BaseCollector, CollectorConfig
 from app.features.feeds.registry import registry
-from app.features.feeds.schemas import RawIndicator
+from app.features.feeds.schemas import RawIndicator, CollectorMetrics
 from app.db.enums import IndicatorType, Severity
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,38 @@ class MispCollector(BaseCollector):
             "User-Agent": "ThreatIntelPlatform/1.0",
         }
 
+        # Determine Timestamp Filter Priority
+        timestamp_filter = None
+        timestamp_source = "none"
+        mode = "Full Sync" if self.config.full_sync else "Incremental"
+
+        if self.config.full_sync:
+            timestamp_filter = None
+            timestamp_source = "none"
+        elif self.config.last_success:
+            # We verified UNIX epoch string is fully supported by MISP
+            timestamp_filter = str(int(self.config.last_success.timestamp()))
+            timestamp_source = "last_success"
+        elif self.config.authentication.get("timestamp"):
+            timestamp_filter = str(self.config.authentication.get("timestamp"))
+            timestamp_source = "authentication.timestamp"
+        else:
+            timestamp_filter = None
+            timestamp_source = "none"
+            mode = "Full Sync"
+
+        logger.info(
+            "\n" + "-" * 40 + "\n"
+            "MISP Synchronization Started\n\n"
+            "Mode:\n"
+            f"- {mode}\n\n"
+            "Timestamp Source:\n"
+            f"- {timestamp_source}\n\n"
+            "Timestamp Filter:\n"
+            f"{timestamp_filter or 'none'}\n"
+            + "-" * 40
+        )
+
         # Handle MISP pagination.
         limit = 1000
         page = 1
@@ -67,8 +100,6 @@ class MispCollector(BaseCollector):
                 "type": list(TYPE_MAPPING.keys()),
             }
             
-            # Incremental polling (default to 7 days if not specified in config)
-            timestamp_filter = self.config.authentication.get("timestamp", "7d")
             if timestamp_filter:
                 payload_dict["timestamp"] = timestamp_filter
 
@@ -95,28 +126,39 @@ class MispCollector(BaseCollector):
             if parsed_url.hostname in ("localhost", "127.0.0.1", "host.docker.internal"):
                 context = ssl._create_unverified_context()
 
-            try:
-                with urllib.request.urlopen(req, context=context) as resp:
-                    body = resp.read().decode("utf-8")
-            except urllib.error.HTTPError as exc:
+            # Inner retry loop for individual page
+            last_page_exc: Exception | None = None
+            page_data = None
+            for attempt in range(1, self.config.max_retries + 1):
+                try:
+                    with urllib.request.urlopen(req, context=context, timeout=self.config.timeout) as resp:
+                        body = resp.read().decode("utf-8")
+                        
+                    try:
+                        page_data = json.loads(body)
+                    except json.JSONDecodeError as exc:
+                        raise RuntimeError(
+                            f"MISP API returned non-JSON response: {body[:200]!r}"
+                        ) from exc
+                        
+                    break # Success, break out of retry loop
+                except (urllib.error.URLError, TimeoutError) as exc:
+                    last_page_exc = exc
+                    logger.warning(
+                        "[%s] MISP page %d attempt %d failed: %s",
+                        self.feed_name, page, attempt, exc
+                    )
+                    if attempt < self.config.max_retries:
+                        time.sleep(self.config.retry_delay * (2 ** (attempt - 1)))
+                        
+            if page_data is None:
                 raise RuntimeError(
-                    f"MISP API returned HTTP {exc.code}: {exc.reason}"
-                ) from exc
-            except urllib.error.URLError as exc:
-                raise RuntimeError(
-                    f"MISP API network error: {exc.reason}"
-                ) from exc
-
-            try:
-                data = json.loads(body)
-            except json.JSONDecodeError as exc:
-                raise RuntimeError(
-                    f"MISP API returned non-JSON response: {body[:200]!r}"
-                ) from exc
+                    f"MISP API failed to fetch page {page} after {self.config.max_retries} attempts"
+                ) from last_page_exc
 
             # MISP /attributes/restSearch can return {"response": {"Attribute": [...]}}
             # or a direct array depending on the instance version and returnFormat.
-            response_data = data.get("response", data)
+            response_data = page_data.get("response", page_data)
             if isinstance(response_data, dict):
                 attributes = response_data.get("Attribute", [])
             else:
@@ -222,3 +264,14 @@ class MispCollector(BaseCollector):
             normalized.append(indicator)
 
         return normalized
+
+    def on_run_complete(self, metrics: CollectorMetrics) -> None:
+        logger.info(
+            "\n" + "-" * 40 + "\n"
+            "Synchronization Complete\n\n"
+            f"Received: {metrics.records_received}\n"
+            f"Added: {metrics.records_added}\n"
+            f"Updated: {metrics.records_updated}\n"
+            f"Duration: {metrics.duration_seconds:.2f}s\n"
+            + "-" * 40
+        )

@@ -6,6 +6,7 @@ import { FeedStatusBadge } from './feed-status-badge';
 import type { FeedResponse } from '../types/feed';
 import { useUpdateFeed, useSyncFeed } from '../hooks/use-feed';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Props {
   feed: FeedResponse;
@@ -14,18 +15,28 @@ interface Props {
 export const FeedHeader: React.FC<Props> = ({ feed }) => {
   const { mutate: updateFeed, isPending: isUpdating } = useUpdateFeed();
   const { mutate: syncFeed, isPending: isSyncing } = useSyncFeed();
-  const [showConfirm, setShowConfirm] = React.useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const [actionToConfirm, setActionToConfirm] = React.useState<'pause' | 'resume' | 'sync' | null>(null);
 
   const handleToggle = () => {
     if (feed.enabled) {
-      setShowConfirm(true);
+      setActionToConfirm('pause');
     } else {
-      updateFeed({ id: feed.id, data: { enabled: true } });
+      setActionToConfirm('resume');
     }
   };
 
-  const confirmDisable = () => {
+  const confirmPause = () => {
     updateFeed({ id: feed.id, data: { enabled: false } });
+  };
+
+  const confirmResume = () => {
+    updateFeed({ id: feed.id, data: { enabled: true } });
+  };
+
+  const confirmSync = () => {
+    syncFeed(feed.id);
   };
 
   return (
@@ -62,7 +73,7 @@ export const FeedHeader: React.FC<Props> = ({ feed }) => {
               <Button
                 variant="default"
                 className="w-full"
-                onClick={() => syncFeed(feed.id)}
+                onClick={() => setActionToConfirm('sync')}
                 disabled={!feed.enabled || isSyncing}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
@@ -70,31 +81,49 @@ export const FeedHeader: React.FC<Props> = ({ feed }) => {
               </Button>
               {!feed.enabled && (
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-md border border-border whitespace-nowrap z-50">
-                  Disabled feeds cannot run until re-enabled
+                  Paused feeds cannot run until resumed
                 </span>
               )}
             </div>
-            <Button
-              variant={feed.enabled ? "outline" : "secondary"}
-              className={`w-full ${feed.enabled ? 'border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive' : ''}`}
-              onClick={handleToggle}
-              disabled={isUpdating}
-            >
-              {feed.enabled ? 'Disable Feed' : 'Enable Feed'}
-            </Button>
+            {isAdmin && (
+              <Button
+                variant={feed.enabled ? "outline" : "secondary"}
+                className={`w-full ${feed.enabled ? 'border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive' : ''}`}
+                onClick={handleToggle}
+                disabled={isUpdating}
+              >
+                {feed.enabled ? 'Pause Feed' : 'Resume Feed'}
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
 
     <ConfirmDialog
-      isOpen={showConfirm}
-      title="Disable Feed"
-      description="Disable this feed? It will no longer be scheduled, but its history and imported indicators will remain."
-      confirmText="Disable"
-      onConfirm={confirmDisable}
-      onCancel={() => setShowConfirm(false)}
+      isOpen={actionToConfirm === 'pause'}
+      title="Pause Feed"
+      description="Pause this feed? It will no longer be scheduled, but its history and imported indicators will remain."
+      confirmText="Pause"
+      onConfirm={confirmPause}
+      onCancel={() => setActionToConfirm(null)}
       isDestructive={true}
+    />
+    <ConfirmDialog
+      isOpen={actionToConfirm === 'resume'}
+      title="Resume Feed"
+      description="Resume this feed? It will start running according to its schedule."
+      confirmText="Resume"
+      onConfirm={confirmResume}
+      onCancel={() => setActionToConfirm(null)}
+    />
+    <ConfirmDialog
+      isOpen={actionToConfirm === 'sync'}
+      title="Run Feed Now"
+      description="Are you sure you want to run this feed manually? This may take some time depending on the size of the feed."
+      confirmText="Run Now"
+      onConfirm={confirmSync}
+      onCancel={() => setActionToConfirm(null)}
     />
     </>
   );

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from app.features.feeds.schemas import RawIndicator
@@ -44,6 +45,10 @@ class CollectorConfig:
     retry_delay: float = 5.0
     # Requests per minute ceiling; 0 = unlimited.
     rate_limit: int = 0
+    # The timestamp of the last successful synchronization.
+    last_success: datetime | None = None
+    # If true, the collector should ignore the last_success timestamp and perform a full sync.
+    full_sync: bool = False
     # Arbitrary key/value pairs from Feed.authentication.
     authentication: dict[str, Any] = field(default_factory=dict)
 

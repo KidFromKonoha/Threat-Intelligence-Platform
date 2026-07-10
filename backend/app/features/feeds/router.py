@@ -29,14 +29,14 @@ def get_feed(feed_id: str, db: Session = Depends(get_db)):
     return FeedService.get_feed(db, feed_id)
 
 
-from app.features.auth.dependencies import require_analyst
+from app.features.auth.dependencies import require_analyst, require_admin
 from app.features.users.models import User
 
 @router.post("", response_model=FeedResponse, status_code=status.HTTP_201_CREATED)
 def create_feed(
     feed_in: FeedCreate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_analyst)
+    current_user: User = Depends(require_admin)
 ):
     return FeedService.create_feed(db, feed_in)
 
@@ -46,7 +46,7 @@ def update_feed(
     feed_id: str, 
     feed_in: FeedUpdate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_analyst)
+    current_user: User = Depends(require_admin)
 ):
     return FeedService.update_feed(db, feed_id, feed_in)
 
@@ -55,7 +55,7 @@ def update_feed(
 def delete_feed(
     feed_id: str, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_analyst)
+    current_user: User = Depends(require_admin)
 ):
     FeedService.delete_feed(db, feed_id)
 
@@ -63,11 +63,12 @@ def delete_feed(
 @router.post("/{feed_id}/run", status_code=status.HTTP_202_ACCEPTED)
 def run_feed_manual(
     feed_id: str, 
+    full_sync: bool = Query(False, description="Ignore last success timestamp and perform a full import"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_analyst)
 ):
     """Trigger a manual feed run asynchronously."""
-    return FeedService.run_feed_manual(db, feed_id)
+    return FeedService.run_feed_manual(db, feed_id, full_sync=full_sync)
 
 
 @router.get("/{feed_id}/runs", response_model=list[FeedRunResponse])

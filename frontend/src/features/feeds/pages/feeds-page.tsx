@@ -9,12 +9,12 @@ import { FeedEmptyState } from '../components/feed-empty-state';
 export const FeedsPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: feeds, isLoading, error } = useFeeds();
-  const [filter, setFilter] = useState<'all' | 'active' | 'disabled'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const filteredFeeds = React.useMemo(() => {
     if (!feeds) return [];
     if (filter === 'active') return feeds.filter(f => f.enabled);
-    if (filter === 'disabled') return feeds.filter(f => !f.enabled);
+    if (filter === 'paused') return feeds.filter(f => !f.enabled);
     return feeds;
   }, [feeds, filter]);
 
@@ -32,12 +32,12 @@ export const FeedsPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <select 
             value={filter} 
-            onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'disabled')}
+            onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'paused')}
             className="h-9 px-3 py-1 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary min-w-[140px]"
           >
             <option value="all">All Feeds</option>
             <option value="active">Active Only</option>
-            <option value="disabled">Disabled Only</option>
+            <option value="paused">Paused Only</option>
           </select>
         </div>
       </div>

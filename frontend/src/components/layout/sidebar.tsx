@@ -19,11 +19,11 @@ export const Sidebar: React.FC = () => {
       {/* Brand */}
       <div className="h-14 flex items-center px-2 border-b border-border gap-3">
         <img
-          src="https://images.seeklogo.com/logo-png/28/2/maruti-suzuki-india-logo-png_seeklogo-289646.png"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ0GVm8f5QX9cmlLaTiDD0Pq2hJYWeMyGto-8_-Q1sADiZD0ohVKbVzq4&s=10"
           alt="Maruti Suzuki"
           className="h-30 w-auto object-contain"
         />
-        <span className="font-semibold text-sm tracking-wide text-foreground"><b>THREATSTREAM</b></span>
+        {/* <span className="font-semibold text-sm tracking-wide text-foreground"><b>THREATSTREAM</b></span> */}
       </div>
 
       {/* Main Nav */}

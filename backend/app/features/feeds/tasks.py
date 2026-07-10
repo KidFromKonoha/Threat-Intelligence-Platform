@@ -28,8 +28,10 @@ logger = get_logger(__name__)
     max_retries=0,          # Retries are handled inside FeedRunner, not Celery.
     acks_late=True,         # Acknowledge only after task completes.
     reject_on_worker_lost=True,
+    soft_time_limit=3600,   # 1 hour
+    time_limit=3900,        # 65 minutes
 )
-def run_collector(self: object, feed_name: str) -> dict:
+def run_collector(self: object, feed_name: str, full_sync: bool = False) -> dict:
     """Execute a single feed collector by name.
 
     Args:
@@ -41,7 +43,7 @@ def run_collector(self: object, feed_name: str) -> dict:
     """
     logger.info("Celery task feeds.run_collector started for feed=%r", feed_name)
     runner = FeedRunner(feed_name=feed_name)
-    metrics = runner.run()
+    metrics = runner.run(full_sync=full_sync)
     logger.info(
         "Celery task feeds.run_collector finished for feed=%r — added=%d errors=%d",
         feed_name,

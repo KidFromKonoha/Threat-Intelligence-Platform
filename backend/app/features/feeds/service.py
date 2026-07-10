@@ -61,13 +61,13 @@ class FeedService:
         logger.info("Feed deleted: %s", feed.name)
 
     @staticmethod
-    def run_feed_manual(db: Session, feed_id: str) -> dict[str, str]:
+    def run_feed_manual(db: Session, feed_id: str, full_sync: bool = False) -> dict[str, str]:
         feed = FeedService.get_feed(db, feed_id)
         if not feed.enabled:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot run a disabled feed")
         
         # Dispatch celery task
-        run_collector.delay(feed.name)
+        run_collector.delay(feed.name, full_sync=full_sync)
         logger.info("Manual execution triggered for feed: %s", feed.name)
         return {"message": "Feed execution started"}
 

@@ -10,7 +10,7 @@ export const FeedStatusBadge: React.FC<Props> = ({ status, enabled = true }) => 
   if (!enabled) {
     return (
       <span className="px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide uppercase border bg-muted text-muted-foreground border-border">
-        DISABLED
+        PAUSED
       </span>
     );
   }

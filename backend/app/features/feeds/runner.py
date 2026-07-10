@@ -12,17 +12,11 @@ Responsibilities (all framework-level, zero duplication in collectors):
   - on_run_complete() hook invocation
 
 Collectors implement only: fetch() / validate() / normalize().
-
-Design note on timeout enforcement:
-  Python cannot reliably interrupt arbitrary synchronous I/O from the same
-  thread.  The timeout is enforced by running fetch() in a ThreadPoolExecutor
-  worker and cancelling it via Future.result(timeout=…).  This still allows
-  the OS to reclaim file descriptors once the thread eventually unblocks.
 """
 
 from __future__ import annotations
 
-import concurrent.futures
+
 import time
 from datetime import datetime, timezone
 
@@ -57,7 +51,7 @@ class FeedRunner:
 
     # ── Public entry point ────────────────────────────────────────────────────
 
-    def run(self) -> CollectorMetrics:
+    def run(self, full_sync: bool = False) -> CollectorMetrics:
         """Execute the feed.  Returns metrics regardless of success or failure.
 
         This method never raises.  All exceptions are caught, logged, and
@@ -92,6 +86,8 @@ class FeedRunner:
                 timeout=30,
                 max_retries=3,
                 rate_limit=feed.rate_limit or 0,
+                last_success=feed.last_success,
+                full_sync=full_sync,
                 authentication=feed.authentication or {},
             )
             collector = collector_cls(config)
@@ -133,8 +129,13 @@ class FeedRunner:
 
         except Exception as exc:
             metrics.duration_seconds = time.monotonic() - start
-            error_msg = f"Unhandled error in FeedRunner: {exc}"
-            logger.exception("[%s] %s", self.feed_name, error_msg)
+            if exc.__class__.__name__ == "SoftTimeLimitExceeded":
+                error_msg = "Feed synchronization exceeded the 1-hour time limit and was terminated."
+                logger.error("[%s] %s", self.feed_name, error_msg)
+            else:
+                error_msg = f"Unhandled error in FeedRunner: {exc}"
+                logger.exception("[%s] %s", self.feed_name, error_msg)
+                
             metrics.errors.append(error_msg)
 
             if feed_run is not None:
@@ -202,23 +203,9 @@ class FeedRunner:
                     config.max_retries,
                     config.timeout,
                 )
-                # Run fetch() in a thread so we can apply a hard timeout.
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                    future = pool.submit(collector.fetch)  # type: ignore[attr-defined]
-                    return future.result(timeout=config.timeout)
-            except concurrent.futures.TimeoutError:
-                last_exc = TimeoutError(
-                    f"fetch() exceeded timeout of {config.timeout}s"
-                )
-                logger.warning(
-                    "[%s] fetch() attempt %d timed out after %ds.",
-                    self.feed_name,
-                    attempt,
-                    config.timeout,
-                )
-                metrics.errors.append(
-                    f"fetch attempt {attempt} timed out after {config.timeout}s"
-                )
+                # HTTP timeout enforcement has been moved to the individual collectors.
+                # We call fetch() directly.
+                return collector.fetch()  # type: ignore[attr-defined]
             except Exception as exc:
                 last_exc = exc
                 logger.warning(

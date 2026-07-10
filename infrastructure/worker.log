@@ -1,0 +1,44 @@
+ 
+ -------------- celery@549f18412960 v5.4.0 (opalescent)
+--- ***** ----- 
+-- ******* ---- Linux-6.18.33.1-microsoft-standard-WSL2-x86_64-with-glibc2.41 2026-07-10 04:22:56
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         tip:0x71691c02a3c0
+- ** ---------- .> transport:   redis://redis:6379/0
+- ** ---------- .> results:     redis://redis:6379/0
+- *** --- * --- .> concurrency: 12 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+                
+
+[tasks]
+  . app.features.enrichment.tasks.run_enrichment
+  . feeds.run_collector
+  . feeds.tick_scheduler
+
+
+worker: Warm shutdown (MainProcess)
+ 
+ -------------- celery@549f18412960 v5.4.0 (opalescent)
+--- ***** ----- 
+-- ******* ---- Linux-6.18.33.1-microsoft-standard-WSL2-x86_64-with-glibc2.41 2026-07-10 07:12:33
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         tip:0x7c27daaa4590
+- ** ---------- .> transport:   redis://redis:6379/0
+- ** ---------- .> results:     redis://redis:6379/0
+- *** --- * --- .> concurrency: 12 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+                
+
+[tasks]
+  . app.features.enrichment.tasks.run_enrichment
+  . feeds.run_collector
+  . feeds.tick_scheduler
+

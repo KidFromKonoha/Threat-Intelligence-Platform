@@ -15,8 +15,8 @@ Collector responsibilities (ONLY what differs from the framework):
   - Map ThreatFox fields → platform's RawIndicator schema.
 
 Framework responsibilities (NOT duplicated here):
-  - HTTP timeout enforcement       (FeedRunner._fetch_with_retry)
-  - Retry with exponential back-off (FeedRunner._fetch_with_retry)
+  - Retrying full execution on catastrophic failure
+  - Celery hard/soft execution bounds
   - ValidationPipeline (None-record filtering)
   - StoragePipeline (upsert + dedup)
   - FeedRun DB record + metrics     (FeedRunner)
@@ -113,7 +113,8 @@ class ThreatFoxCollector(BaseCollector):
     validate()  → Drops records with missing/unsupported fields.
     normalize() → Converts validated records to RawIndicator objects.
 
-    The framework (FeedRunner) handles timeouts, retries, storage, and metrics.
+    The framework (FeedRunner) handles storage, metrics, and execution limits.
+    The collector enforces per-request timeouts.
     """
 
     feed_name = "threatfox"
@@ -123,9 +124,7 @@ class ThreatFoxCollector(BaseCollector):
     def fetch(self) -> dict[str, Any]:
         """POST to the ThreatFox API and return the parsed JSON response.
 
-        The framework enforces the timeout — this method must NOT set its own
-        socket timeout (doing so would bypass the ThreadPoolExecutor boundary
-        and could cause a double-timeout).
+        This method enforces a per-request socket timeout using config.timeout.
 
         Returns:
             The full parsed API response dict:
@@ -165,7 +164,7 @@ class ThreatFoxCollector(BaseCollector):
         )
 
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=self.config.timeout) as resp:
                 body = resp.read().decode("utf-8")
         except urllib.error.HTTPError as exc:
             raise RuntimeError(
