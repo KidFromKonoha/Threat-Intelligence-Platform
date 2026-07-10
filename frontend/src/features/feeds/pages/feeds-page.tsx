@@ -1,25 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFeeds } from '../hooks/use-feed';
 import { FeedCard } from '../components/feed-card';
 import { FeedSkeleton } from '../components/feed-skeleton';
 import { FeedEmptyState } from '../components/feed-empty-state';
-import { Database } from 'lucide-react';
+
 
 export const FeedsPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: feeds, isLoading, error } = useFeeds();
+  const [filter, setFilter] = useState<'all' | 'active' | 'disabled'>('all');
+
+  const filteredFeeds = React.useMemo(() => {
+    if (!feeds) return [];
+    if (filter === 'active') return feeds.filter(f => f.enabled);
+    if (filter === 'disabled') return feeds.filter(f => !f.enabled);
+    return feeds;
+  }, [feeds, filter]);
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto">
       {/* Page Header */}
-      <div className="px-6 py-4 border-b border-border flex items-center gap-3 bg-card/30 flex-shrink-0">
-        <Database className="w-4 h-4 text-muted-foreground" />
+      <div className="px-6 py-4 border-b border-border flex flex-col gap-6 md:flex-row md:items-center justify-between bg-card/30 flex-shrink-0">
         <div>
-          <h1 className="text-base font-semibold tracking-tight">Feed Management</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Monitor and manage intelligence feed integrations
+          <h1 className="text-3xl font-bold tracking-tight mb-1">Intelligence Feeds</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your external threat intelligence sources and their synchronization schedules.
           </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <select 
+            value={filter} 
+            onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'disabled')}
+            className="h-9 px-3 py-1 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary min-w-[140px]"
+          >
+            <option value="all">All Feeds</option>
+            <option value="active">Active Only</option>
+            <option value="disabled">Disabled Only</option>
+          </select>
         </div>
       </div>
 
@@ -34,11 +53,11 @@ export const FeedsPage: React.FC = () => {
               {error instanceof Error ? error.message : 'Unknown error occurred.'}
             </p>
           </div>
-        ) : !feeds || feeds.length === 0 ? (
+        ) : !filteredFeeds || filteredFeeds.length === 0 ? (
           <FeedEmptyState />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-300">
-            {feeds.map((feed) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+            {filteredFeeds.map((feed) => (
               <FeedCard
                 key={feed.id}
                 feed={feed}

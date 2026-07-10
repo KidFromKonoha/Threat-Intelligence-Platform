@@ -56,11 +56,12 @@ class DashboardService:
             .filter(Indicator.created_at >= one_day_ago).scalar() or 0
             
         active_feeds = db.query(func.count(Feed.id))\
-            .filter(Feed.status == FeedStatus.ACTIVE.value).scalar() or 0
+            .filter(Feed.enabled == True, Feed.status == FeedStatus.ACTIVE.value).scalar() or 0
             
-        total_feeds = db.query(func.count(Feed.id)).scalar() or 0
+        total_feeds = db.query(func.count(Feed.id))\
+            .filter(Feed.enabled == True).scalar() or 0
         error_feeds = db.query(func.count(Feed.id))\
-            .filter(Feed.status == FeedStatus.ERROR.value).scalar() or 0
+            .filter(Feed.enabled == True, Feed.status == FeedStatus.ERROR.value).scalar() or 0
             
         health_percentage = (active_feeds / total_feeds * 100.0) if total_feeds > 0 else 0.0
         feed_health = FeedHealthScore(
@@ -186,7 +187,8 @@ class DashboardService:
             feed_stats.c.failed_runs,
             feed_stats.c.average_run_duration,
             last_runs.c.duration.label('last_run_duration')
-        ).outerjoin(feed_stats, Feed.id == feed_stats.c.feed_id)\
+        ).filter(Feed.enabled == True)\
+         .outerjoin(feed_stats, Feed.id == feed_stats.c.feed_id)\
          .outerjoin(last_runs, Feed.id == last_runs.c.feed_id)\
          .all()
          

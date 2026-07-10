@@ -5,6 +5,7 @@ import { Database, RefreshCw } from 'lucide-react';
 import { FeedStatusBadge } from './feed-status-badge';
 import type { FeedResponse } from '../types/feed';
 import { useSyncFeed, useUpdateFeed } from '../hooks/use-feed';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface Props {
   feed: FeedResponse;
@@ -15,9 +16,19 @@ export const FeedCard: React.FC<Props> = ({ feed, onClick }) => {
   const { mutate: syncFeed, isPending: isSyncing } = useSyncFeed();
   const { mutate: updateFeed, isPending: isUpdating } = useUpdateFeed();
 
+  const [showConfirm, setShowConfirm] = React.useState(false);
+
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    updateFeed({ id: feed.id, data: { enabled: !feed.enabled } });
+    if (feed.enabled) {
+      setShowConfirm(true);
+    } else {
+      updateFeed({ id: feed.id, data: { enabled: true } });
+    }
+  };
+
+  const confirmDisable = () => {
+    updateFeed({ id: feed.id, data: { enabled: false } });
   };
 
   const handleSync = (e: React.MouseEvent) => {
@@ -26,20 +37,23 @@ export const FeedCard: React.FC<Props> = ({ feed, onClick }) => {
   };
 
   return (
-    <Card 
-      className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-md"
-      onClick={onClick}
-    >
+    <>
+      <Card 
+        className={`cursor-pointer transition-all hover:shadow-md ${
+          !feed.enabled ? 'border-border/50 bg-card/50 grayscale-[0.3]' : 'hover:border-primary/50'
+        }`}
+        onClick={onClick}
+      >
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-secondary/50 rounded-md">
-              <Database className="w-5 h-5 text-primary" />
+            <div className={`p-2 rounded-md ${!feed.enabled ? 'bg-secondary/30' : 'bg-secondary/50'}`}>
+              <Database className={`w-5 h-5 ${!feed.enabled ? 'text-muted-foreground' : 'text-primary'}`} />
             </div>
             <div>
-              <h3 className="font-semibold text-base leading-none mb-1.5">{feed.name}</h3>
+              <h3 className={`font-semibold text-base leading-none mb-1.5 ${!feed.enabled ? 'text-muted-foreground' : ''}`}>{feed.name}</h3>
               <div className="flex items-center gap-2">
-                <FeedStatusBadge status={feed.status} />
+                <FeedStatusBadge status={feed.status} enabled={feed.enabled} />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                   {feed.type.replace('_', ' ')}
                 </span>
@@ -76,22 +90,40 @@ export const FeedCard: React.FC<Props> = ({ feed, onClick }) => {
             {feed.enabled ? 'Disable' : 'Enable'}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSync}
-            disabled={!feed.enabled || isSyncing}
-            className="text-primary hover:text-primary hover:bg-primary/10"
-          >
-            {isSyncing ? (
-              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
+          <div className="relative group flex flex-col items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSync}
+              disabled={!feed.enabled || isSyncing}
+              className={feed.enabled ? "text-primary hover:text-primary hover:bg-primary/10" : ""}
+            >
+              {isSyncing ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Sync Now
+            </Button>
+            {!feed.enabled && (
+              <span className="absolute bottom-full mb-2 hidden group-hover:block bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-md border border-border whitespace-nowrap z-50">
+                Disabled feeds cannot run until re-enabled
+              </span>
             )}
-            Sync Now
-          </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
+
+    <ConfirmDialog
+      isOpen={showConfirm}
+      title="Disable Feed"
+      description="Disable this feed? It will no longer be scheduled, but its history and imported indicators will remain."
+      confirmText="Disable"
+      onConfirm={confirmDisable}
+      onCancel={() => setShowConfirm(false)}
+      isDestructive={true}
+    />
+    </>
   );
 };
