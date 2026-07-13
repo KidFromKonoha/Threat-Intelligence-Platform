@@ -17,9 +17,9 @@ export const FeedHistoryTable: React.FC<Props> = ({ runs, isLoading }) => {
   }
 
   return (
-    <div className="border border-border rounded-md overflow-hidden">
+    <div className="border border-border/60 rounded-xl overflow-hidden bg-card/50 shadow-sm">
       <table className="w-full text-sm text-left">
-        <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
+        <thead className="text-[11px] text-muted-foreground uppercase tracking-wider bg-black/5 dark:bg-white/[0.02] border-b border-border/60">
           <tr>
             <th className="px-4 py-3 font-medium">Status</th>
             <th className="px-4 py-3 font-medium">Start Time</th>
@@ -29,9 +29,9 @@ export const FeedHistoryTable: React.FC<Props> = ({ runs, isLoading }) => {
             <th className="px-4 py-3 font-medium text-right">Updated</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border/40">
           {runs.map(run => (
-            <tr key={run.id} className="hover:bg-secondary/10 transition-colors">
+            <tr key={run.id} className="hover:bg-black/5 dark:hover:bg-white/[0.02] transition-colors">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-1.5">
                   {run.status === 'success' ? (

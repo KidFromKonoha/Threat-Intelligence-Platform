@@ -4,54 +4,69 @@
 
 @layer base {
   :root {
-    --background: 220 14% 96%;
-    /* Slightly warm grey page bg */
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    /* Cards are white — lifted above bg */
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 222 47% 25%;
-    /* Deeper navy primary */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 220 13% 91%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 220 13% 91%;
-    --muted-foreground: 215 16% 42%;
-    /* Slightly darker for better contrast */
-    --accent: 220 13% 91%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 84%;
-    /* Visible borders in light mode */
-    --input: 220 13% 84%;
-    --ring: 222 47% 25%;
-    --radius: 0.25rem;
+    /* Base Background - Very Dark Gray (Near Black) for Premium Enterprise Feel */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    /* Cards - Slightly lighter than background to create depth */
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+
+    /* Popovers - Match cards */
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary - Crisp white or vibrant blue for buttons */
+    /* Vercel/Linear style favors white/monochrome primary actions */
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    /* Secondary - Muted dark for secondary actions */
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Muted - For subtle backgrounds and text */
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 65%;
+
+    /* Accent - For hovers and subtle highlights */
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+
+    /* Destructive - Crisp, readable red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Borders and Inputs - Subtle, low contrast */
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 240 5% 65%;
+
+    /* Tighter, modern border radius */
+    --radius: 0.375rem;
   }
 
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 222 47% 6%;
-    /* Cards slightly lighter than bg in dark */
-    --card-foreground: 213 31% 91%;
-    --popover: 222 47% 6%;
-    --popover-foreground: 215 20.2% 65.1%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 212.7 26.8% 83.9%;
+  .light {
+    /* Clean Light Mode - crisp white, high contrast text */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 4%;
   }
 }
 

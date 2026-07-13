@@ -22,9 +22,9 @@ export const TopNavigation: React.FC = () => {
   };
 
   return (
-    <header className="h-14 border-b border-border bg-card px-6 flex items-center justify-between">
+    <header className="h-14 border-b border-border/40 bg-background/95 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-40">
       {/* Search */}
-      <div className="flex items-center max-w-md w-full bg-background border border-border rounded-md px-3 h-8 focus-within:ring-1 focus-within:ring-primary transition-shadow">
+      <div className="flex items-center max-w-md w-full bg-black/5 dark:bg-white/[0.02] border border-border/60 rounded-md px-3 h-8 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
         <Search className="w-3.5 h-3.5 text-muted-foreground mr-2" />
         <input 
           type="text" 

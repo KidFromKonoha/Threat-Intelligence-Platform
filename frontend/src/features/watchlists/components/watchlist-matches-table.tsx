@@ -16,9 +16,9 @@ export const WatchlistMatchesTable: React.FC<Props> = ({ matches }) => {
         <CardDescription>Entities that have matched this watchlist's criteria.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="border border-border rounded-md overflow-hidden">
+        <div className="border border-border/60 rounded-xl overflow-hidden bg-card/50 shadow-sm">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
+            <thead className="text-[11px] text-muted-foreground uppercase tracking-wider bg-black/5 dark:bg-white/[0.02] border-b border-border/60">
               <tr>
                 <th className="px-4 py-3 font-medium">Entity ID</th>
                 <th className="px-4 py-3 font-medium">Type</th>
@@ -27,7 +27,7 @@ export const WatchlistMatchesTable: React.FC<Props> = ({ matches }) => {
                 <th className="px-4 py-3 font-medium text-right">View</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/40">
               {matches.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
@@ -39,15 +39,15 @@ export const WatchlistMatchesTable: React.FC<Props> = ({ matches }) => {
                   const typeRoute = match.entity_type === 'threat_actor' ? 'threat-actor' : match.entity_type;
                   
                   return (
-                    <tr key={match.id} className="hover:bg-secondary/10 transition-colors">
+                    <tr key={match.id} className="hover:bg-black/5 dark:hover:bg-white/[0.02] transition-colors">
                       <td className="px-4 py-3 font-mono text-xs">{match.entity_id}</td>
-                      <td className="px-4 py-3 uppercase text-xs font-semibold tracking-wider">{match.entity_type.replace('_', ' ')}</td>
+                      <td className="px-4 py-3 uppercase text-[10px] font-semibold tracking-wider text-muted-foreground">{match.entity_type.replace('_', ' ')}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-1 bg-secondary rounded text-xs">
+                        <span className="inline-block px-2 py-1 bg-secondary border border-border/50 rounded text-xs">
                           {match.match_reason}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-3 text-muted-foreground text-xs font-mono">
                         {new Date(match.created_at).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right">

@@ -76,15 +76,15 @@ export const WatchlistEntityTable: React.FC<Props> = ({ watchlist }) => {
           />
         </div>
 
-        <div className="border border-border rounded-md overflow-hidden">
+        <div className="border border-border/60 rounded-xl overflow-hidden bg-card/50 shadow-sm">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
+            <thead className="text-[11px] text-muted-foreground uppercase tracking-wider bg-black/5 dark:bg-white/[0.02] border-b border-border/60">
               <tr>
                 <th className="px-4 py-3 font-medium">Value</th>
                 <th className="px-4 py-3 font-medium w-[100px] text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/40">
               {filteredValues.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="px-4 py-8 text-center text-muted-foreground">
@@ -93,8 +93,8 @@ export const WatchlistEntityTable: React.FC<Props> = ({ watchlist }) => {
                 </tr>
               ) : (
                 filteredValues.map((val) => (
-                  <tr key={val} className="hover:bg-secondary/10 transition-colors">
-                    <td className="px-4 py-3 font-mono">{val}</td>
+                  <tr key={val} className="hover:bg-black/5 dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-3 font-mono text-xs">{val}</td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => handleRemoveValue(val)}
