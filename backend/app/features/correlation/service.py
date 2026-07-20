@@ -67,7 +67,6 @@ _RELATED_VIA = [
     ("campaigns",     indicator_campaign,      "campaign_id"),
     ("threat_actors", indicator_threat_actor,  "threat_actor_id"),
     ("reports",       indicator_report,        "report_id"),
-    ("feeds",         indicator_feed,          "feed_id"),
 ]
 
 
@@ -214,7 +213,6 @@ class CorrelationService:
             "campaigns":     {c.id for c in _coerce(anchor.campaigns)},
             "threat_actors": {t.id for t in _coerce(anchor.threat_actors)},
             "reports":       {r.id for r in _coerce(anchor.reports)},
-            "feeds":         {f.id for f in _coerce(anchor.feeds)},
         }
 
         # If the anchor has no relationships at all, return early.
@@ -260,7 +258,6 @@ class CorrelationService:
                 selectinload(Indicator.campaigns),
                 selectinload(Indicator.threat_actors),
                 selectinload(Indicator.reports),
-                selectinload(Indicator.feeds),
             )
             .filter(
                 Indicator.id != indicator_id,
@@ -278,20 +275,17 @@ class CorrelationService:
             ind_campaign_ids     = {c.id for c in _coerce(ind.campaigns)}
             ind_threat_actor_ids = {t.id for t in _coerce(ind.threat_actors)}
             ind_report_ids       = {r.id for r in _coerce(ind.reports)}
-            ind_feed_ids         = {f.id for f in _coerce(ind.feeds)}
 
             shared_malware       = anchor_ids["malware"]       & ind_malware_ids
             shared_campaigns     = anchor_ids["campaigns"]     & ind_campaign_ids
             shared_threat_actors = anchor_ids["threat_actors"] & ind_threat_actor_ids
             shared_reports       = anchor_ids["reports"]       & ind_report_ids
-            shared_feeds         = anchor_ids["feeds"]         & ind_feed_ids
 
             shared_count = (
                 len(shared_malware)
                 + len(shared_campaigns)
                 + len(shared_threat_actors)
                 + len(shared_reports)
-                + len(shared_feeds)
             )
 
             if shared_count == 0:
@@ -306,7 +300,6 @@ class CorrelationService:
             shared_campaign_names      = [c.name for c in _coerce(ind.campaigns)     if c.id in shared_campaigns]
             shared_threat_actor_names  = [t.name for t in _coerce(ind.threat_actors) if t.id in shared_threat_actors]
             shared_report_titles       = [r.title for r in _coerce(ind.reports)      if r.id in shared_reports]
-            shared_feed_names          = [f.name for f in _coerce(ind.feeds)         if f.id in shared_feeds]
 
             scored.append(
                 RelatedIndicatorResponse(
@@ -323,7 +316,7 @@ class CorrelationService:
                         campaigns=shared_campaign_names,
                         threat_actors=shared_threat_actor_names,
                         reports=shared_report_titles,
-                        feeds=shared_feed_names,
+                        feeds=[],
                     ),
                 )
             )

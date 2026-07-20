@@ -107,7 +107,6 @@ class GraphService:
                                     if (ref_type, r.id) not in visited_nodes:
                                         next_level.add((ref_type, r.id))
                                         
-                            _proc(rels.feeds, "feed", "feeds")
                             _proc(rels.malware, "malware", "malware")
                             _proc(rels.campaigns, "campaign", "campaigns")
                             _proc(rels.threat_actors, "threat-actor", "threat_actors")
@@ -144,7 +143,7 @@ class GraphService:
                                 
                             for rel_item in related_items:
                                 rel_type = MODEL_TO_TYPE.get(type(rel_item))
-                                if not rel_type:
+                                if not rel_type or rel_type == "feed" or (e_type == "feed" and rel.key == "indicators"):
                                     continue
                                     
                                 rel_id = str(rel_item.id)
