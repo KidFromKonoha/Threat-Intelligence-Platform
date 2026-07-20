@@ -71,11 +71,11 @@ class GlobalSearchService:
         )
         indicators = [
             IndicatorSummary(
-                id=r.id,
-                type=r.type,
-                value=r.value,
+                id=str(r.id),
+                type=str(r.type),
+                value=str(r.value),
                 confidence=r.confidence,
-                severity=r.severity,
+                severity=str(r.severity),
             )
             for r in indicator_rows
         ]
@@ -89,10 +89,10 @@ class GlobalSearchService:
         )
         malware = [
             EntitySummary(
-                id=r.id,
-                name=r.name,
+                id=str(r.id),
+                name=str(r.name or 'Unknown'),
                 entity_type="malware",
-                description=r.description,
+                description=str(r.description) if r.description else None,
             )
             for r in malware_rows
         ]
@@ -106,10 +106,10 @@ class GlobalSearchService:
         )
         threat_actors = [
             EntitySummary(
-                id=r.id,
-                name=r.name,
+                id=str(r.id),
+                name=str(r.name or 'Unknown'),
                 entity_type="threat_actor",
-                description=r.description,
+                description=str(r.description) if r.description else None,
             )
             for r in ta_rows
         ]
@@ -123,10 +123,10 @@ class GlobalSearchService:
         )
         campaigns = [
             EntitySummary(
-                id=r.id,
-                name=r.name,
+                id=str(r.id),
+                name=str(r.name or 'Unknown'),
                 entity_type="campaign",
-                description=r.description,
+                description=str(r.description) if r.description else None,
             )
             for r in campaign_rows
         ]
@@ -140,10 +140,10 @@ class GlobalSearchService:
         )
         reports = [
             EntitySummary(
-                id=r.id,
-                name=r.title,
+                id=str(r.id),
+                name=str(r.title or 'Unknown'),
                 entity_type="report",
-                description=r.summary,
+                description=str(r.summary) if r.summary else None,
             )
             for r in report_rows
         ]
@@ -162,10 +162,10 @@ class GlobalSearchService:
         )
         techniques = [
             EntitySummary(
-                id=r.id,
+                id=str(r.id),
                 name=f"{r.technique_id} — {r.name}",
                 entity_type="technique",
-                description=r.description,
+                description=str(r.description) if r.description else None,
             )
             for r in technique_rows
         ]
@@ -179,10 +179,10 @@ class GlobalSearchService:
         )
         vulnerabilities = [
             EntitySummary(
-                id=r.id,
-                name=r.cve,
+                id=str(r.id),
+                name=str(r.cve or 'Unknown'),
                 entity_type="vulnerability",
-                description=r.description,
+                description=str(r.description) if r.description else None,
             )
             for r in vuln_rows
         ]

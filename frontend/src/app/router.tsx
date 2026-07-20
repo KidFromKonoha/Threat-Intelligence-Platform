@@ -26,6 +26,11 @@ const MalwarePage = lazy(() => import('../features/entity-details/pages/malware-
 const CampaignPage = lazy(() => import('../features/entity-details/pages/campaign-page').then(m => ({ default: m.CampaignPage })));
 const VulnerabilityPage = lazy(() => import('../features/entity-details/pages/vulnerability-page').then(m => ({ default: m.VulnerabilityPage })));
 
+// Investigation Pages
+const IndicatorInvestigationPage = lazy(() => import('../features/investigation/pages/investigation-page').then(m => ({ default: m.InvestigationPage })));
+const ThreatActorInvestigationPage = lazy(() => import('../features/investigation/pages/threat-actor-investigation-page').then(m => ({ default: m.ThreatActorInvestigationPage })));
+const CampaignInvestigationPage = lazy(() => import('../features/investigation/pages/campaign-investigation-page').then(m => ({ default: m.CampaignInvestigationPage })));
+
 // Graph
 const GraphPage = lazy(() => import('../features/graph/pages/graph-page').then(m => ({ default: m.GraphPage })));
 
@@ -155,6 +160,18 @@ export const router = createBrowserRouter([
           {
             path: '*',
             element: <Wrap><NotFoundPage /></Wrap>,
+          },
+          {
+            path: 'investigation/indicator/:id',
+            element: <Wrap fallback={<EntityFallback />}><IndicatorInvestigationPage /></Wrap>,
+          },
+          {
+            path: 'investigation/threat-actor/:id',
+            element: <Wrap fallback={<EntityFallback />}><ThreatActorInvestigationPage /></Wrap>,
+          },
+          {
+            path: 'investigation/campaign/:id',
+            element: <Wrap fallback={<EntityFallback />}><CampaignInvestigationPage /></Wrap>,
           },
         ],
       },

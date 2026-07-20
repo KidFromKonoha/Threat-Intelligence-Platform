@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardLayout, WidgetWidth } from '../framework/types';
+import type { DashboardLayout, WidgetWidth } from '../framework/types';
 import { widgetRegistry } from '../framework/registry';
 
 interface DashboardGridProps {

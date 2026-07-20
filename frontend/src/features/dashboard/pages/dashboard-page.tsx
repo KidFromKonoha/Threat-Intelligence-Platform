@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { DashboardGrid } from '../components/dashboard-grid';
 import { registerDashboardWidgets, dashboardLayouts } from '../framework';
-import { Role } from '../framework/types';
+import type { Role } from '../framework/types';
 
 // Initialize the registry
 registerDashboardWidgets();

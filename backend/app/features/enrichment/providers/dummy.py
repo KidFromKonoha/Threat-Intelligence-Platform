@@ -24,6 +24,9 @@ class DummyEnrichmentProvider(BaseEnrichmentProvider):
         # Simulate network latency (0.5s)
         time.sleep(0.5)
         
+        if indicator.value == "198.51.100.42":
+            raise RuntimeError("Simulated provider failure for isolation testing")
+        
         # Deterministic dummy data based on indicator ID
         score = sum(ord(c) for c in indicator.id) % 100
         

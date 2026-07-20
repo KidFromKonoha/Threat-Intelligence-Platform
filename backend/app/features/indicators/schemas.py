@@ -232,6 +232,7 @@ class IndicatorResponse(BaseModel):
     source_count: int
     country: str | None = None
     asn: str | None = None
+    tlp: str | None = None
     tags: list[str] | None = None
     created_at: datetime
     updated_at: datetime

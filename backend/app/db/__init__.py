@@ -42,3 +42,4 @@ import app.features.threat_actors.models  # noqa: F401
 import app.features.vulnerabilities.models  # noqa: F401
 import app.features.watchlists.models  # noqa: F401
 import app.features.enrichment.models  # noqa: F401
+import app.features.investigation.models  # noqa: F401

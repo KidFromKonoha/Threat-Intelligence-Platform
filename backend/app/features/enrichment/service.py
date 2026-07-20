@@ -49,11 +49,15 @@ class EnrichmentService:
         )
 
     @staticmethod
-    def run_enrichment_sync(db: Session, indicator_id: str) -> None:
+    def run_enrichment_sync(db: Session, indicator_id: str, event_bus: 'EventBus' = None, correlation_id: str = None) -> None:
         """Run all applicable enrichment providers synchronously for an indicator.
         
-        Typically called from a Celery worker.
+        Typically called from the enrichment worker.
         """
+        from datetime import datetime, timezone
+        import uuid
+        from app.core.events.schema import EventEnvelope, IndicatorEnrichedPayload
+
         enrichment_registry.autodiscover()
         
         indicator = db.query(Indicator).filter(Indicator.id == indicator_id).first()
@@ -65,49 +69,77 @@ class EnrichmentService:
         logger.info("[enrichment] Starting enrichment for indicator=%s (type=%s) with %d registered providers", 
                     indicator_id, indicator.type, len(providers))
 
-        for provider_cls in providers:
-            if indicator.type not in provider_cls.supported_indicator_types:
-                continue
+        results_saved = False
 
+        for provider_cls in providers:
             provider_name = provider_cls.provider_name
-            logger.info("[enrichment] Running provider=%s for indicator=%s", provider_name, indicator_id)
-            
-            provider = provider_cls()
-            t0 = time.monotonic()
             
             # Create a pending result record first
             result_record = EnrichmentResult(
                 indicator_id=indicator_id,
                 provider=provider_name,
-                execution_status=EnrichmentStatus.PENDING.value
+                status=EnrichmentStatus.PENDING.value
             )
             db.add(result_record)
             db.commit()
+
+            if indicator.type not in provider_cls.supported_indicator_types:
+                logger.info("[enrichment] Skipping provider=%s for indicator=%s (unsupported type)", provider_name, indicator_id)
+                result_record.status = EnrichmentStatus.NOT_SUPPORTED.value
+                result_record.completed_at = datetime.now(timezone.utc)
+                db.add(result_record)
+                db.commit()
+                continue
+
+            logger.info("[enrichment] Running provider=%s for indicator=%s", provider_name, indicator_id)
+            
+            provider = provider_cls()
             
             try:
                 # Execute the provider
                 result_data = provider.enrich(indicator)
                 
-                duration = time.monotonic() - t0
-                result_record.execution_status = EnrichmentStatus.SUCCESS.value
-                result_record.execution_duration = duration
+                result_record.status = EnrichmentStatus.SUCCESS.value
                 result_record.raw_response = result_data.raw_response
                 result_record.extracted_attributes = result_data.extracted_attributes
+                result_record.completed_at = datetime.now(timezone.utc)
                 
-                logger.info("[enrichment] Provider=%s succeeded for indicator=%s in %.3fs", 
-                            provider_name, indicator_id, duration)
+                # Assume provider_version and expires_at could be part of the result,
+                # but for now we leave them as what the base provides (or null).
+                if hasattr(provider_cls, 'provider_version'):
+                    result_record.provider_version = provider_cls.provider_version
+                    
+                # We could support an explicit ttl from the provider here in the future
+                
+                logger.info("[enrichment] Provider=%s succeeded for indicator=%s", 
+                            provider_name, indicator_id)
                             
             except Exception as e:
-                duration = time.monotonic() - t0
                 logger.exception("[enrichment] Provider=%s failed for indicator=%s: %s", 
                                  provider_name, indicator_id, str(e))
                                  
-                result_record.execution_status = EnrichmentStatus.FAILED.value
-                result_record.execution_duration = duration
+                result_record.status = EnrichmentStatus.FAILED.value
+                result_record.error = str(e)
+                result_record.completed_at = datetime.now(timezone.utc)
                 # Do not re-raise! Isolate provider failures.
                 
             finally:
                 db.add(result_record)
                 db.commit()
+                results_saved = True
 
         logger.info("[enrichment] Enrichment complete for indicator=%s", indicator_id)
+
+        # Publish the IndicatorEnriched event after all providers have run and committed
+        if results_saved and event_bus:
+            payload = IndicatorEnrichedPayload(indicator_id=indicator_id)
+            envelope = EventEnvelope(
+                producer="EnrichmentEngine",
+                payload=payload,
+                correlation_id=correlation_id if correlation_id else str(uuid.uuid4())
+            )
+            event_bus.publish("tip.events.indicator.enriched", envelope)
+            logger.info("[enrichment] Published IndicatorEnriched event for %s", indicator_id)
+            
+            # Add audit event
+            # Audit event will be handled by audit_worker.py consuming IndicatorEnriched.

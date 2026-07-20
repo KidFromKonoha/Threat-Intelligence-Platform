@@ -1,32 +1,52 @@
-import { DashboardLayout } from './types';
+import type { DashboardLayout } from './types';
 
 export const dashboardLayouts: Record<string, DashboardLayout> = {
   admin: {
     role: 'admin',
     sections: [
       {
-        id: 'overview',
-        title: 'Platform Overview',
+        id: 'platform_core',
+        title: 'Platform Operations',
         widgets: [
-          { id: 'overview', width: 'md' },
-          { id: 'feed-status', width: 'md' },
-          { id: 'organization', width: 'md' }
+          { id: 'overview', width: 'xl' },
+          { id: 'feed-status', width: 'xl' },
+          { id: 'quick-actions', width: 'full' }
+        ]
+      },
+
+      {
+        id: 'highlights',
+        widgets: [
+          { id: 'intelligence-highlights', width: 'full' }
         ]
       },
       {
-        id: 'operations',
-        title: 'Operations & Intelligence',
+        id: 'operations_triage',
+        title: 'Triage & Investigations',
         widgets: [
-          { id: 'threat-activity', width: 'lg' },
-          { id: 'recent-intelligence', width: 'md' }
+          { id: 'automotive-alert', width: 'full' },
+          { id: 'priority-queue', width: 'lg' },
+          { id: 'investigation-health', width: 'md' },
+          { id: 'investigation-summary', width: 'md' }
         ]
       },
       {
-        id: 'actions_status',
-        title: 'Quick Actions & System Status',
+        id: 'intelligence_activity',
+        title: 'Intelligence Activity',
         widgets: [
-          { id: 'quick-actions', width: 'xl' },
-          { id: 'system-status', width: 'xl' }
+          { id: 'watchlist-activity', width: 'md' },
+          { id: 'ioc-distribution', width: 'md' },
+          { id: 'threat-activity', width: 'xl' },
+          { id: 'high-severity', width: 'md' },
+          { id: 'feed-contribution', width: 'md' }
+        ]
+      },
+      {
+        id: 'recent',
+        title: 'Recent Intelligence',
+        widgets: [
+          { id: 'recent-intelligence', width: 'full' },
+          { id: 'intelligence-snapshot', width: 'full' }
         ]
       }
     ]
@@ -35,18 +55,32 @@ export const dashboardLayouts: Record<string, DashboardLayout> = {
     role: 'analyst',
     sections: [
       {
-        id: 'operations',
-        title: 'Operations',
+        id: 'highlights',
         widgets: [
-          { id: 'threat-activity', width: 'lg' },
-          { id: 'recent-intelligence', width: 'md' }
+          { id: 'intelligence-highlights', width: 'full' }
         ]
       },
       {
-        id: 'actions',
-        title: 'Quick Actions',
+        id: 'operations_triage',
         widgets: [
-          { id: 'quick-actions', width: 'full' }
+          { id: 'automotive-alert', width: 'full' },
+          { id: 'priority-queue', width: 'lg' },
+          { id: 'investigation-health', width: 'md' }
+        ]
+      },
+      {
+        id: 'intelligence_activity',
+        title: 'Intelligence Activity',
+        widgets: [
+          { id: 'watchlist-activity', width: 'md' },
+          { id: 'ioc-distribution', width: 'md' },
+          { id: 'threat-activity', width: 'xl' }
+        ]
+      },
+      {
+        id: 'recent',
+        widgets: [
+          { id: 'recent-intelligence', width: 'full' }
         ]
       }
     ]

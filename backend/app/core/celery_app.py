@@ -22,6 +22,10 @@ celery_app.conf.update(
             "task": "feeds.tick_scheduler",
             "schedule": 60.0,   # seconds
         },
+        "bulk-scoring-every-minute": {
+            "task": "app.features.scoring.tasks.bulk_score_indicators_task",
+            "schedule": 60.0,
+        },
     },
 )
 

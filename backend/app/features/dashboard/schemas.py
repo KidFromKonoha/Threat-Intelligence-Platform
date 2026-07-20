@@ -25,6 +25,21 @@ class DashboardOverviewResponse(BaseModel):
     open_investigations: int
 
 
+# ── Snapshot ─────────────────────────────────────────────────────────────────
+
+class TrendMetric(BaseModel):
+    count: int
+    trend: str  # 'up', 'down', 'flat'
+
+class DashboardIntelligenceSnapshotResponse(BaseModel):
+    new_indicators: TrendMetric
+    new_threat_actors: TrendMetric
+    new_malware: TrendMetric
+    new_campaigns: TrendMetric
+    new_reports: TrendMetric
+    open_investigations: TrendMetric
+
+
 # ── Threat Activity ──────────────────────────────────────────────────────────
 
 class DailyCount(BaseModel):
@@ -79,9 +94,119 @@ class DashboardFeedStatusResponse(BaseModel):
 
 # ── Recent Intelligence ──────────────────────────────────────────────────────
 
+class RecentIntelligenceItem(BaseModel):
+    id: str
+    type: str
+    value: str
+    severity: str
+    confidence: int
+    risk_score: int = 0
+    source: str | None = None
+    created_at: datetime
+    tags: list[str] = []
+
 class DashboardRecentIntelligenceResponse(BaseModel):
+    items: list[RecentIntelligenceItem]
+    total_count: int
+    page: int
+    has_next_page: bool
+
+# ── High Severity Intelligence ───────────────────────────────────────────────
+
+class DashboardHighSeverityIntelligenceResponse(BaseModel):
     indicators: list[IndicatorSummary]
-    campaigns: list[EntitySummary]
-    malware: list[EntitySummary]
-    threat_actors: list[EntitySummary]
-    vulnerabilities: list[EntitySummary]
+
+# ── IOC Distribution ─────────────────────────────────────────────────────────
+
+class IocDistribution(BaseModel):
+    type: str
+    count: int
+
+class DashboardIocDistributionResponse(BaseModel):
+    distribution: list[IocDistribution]
+
+# ── Feed Contribution ────────────────────────────────────────────────────────
+
+class FeedContribution(BaseModel):
+    feed_name: str
+    count: int
+
+class DashboardFeedContributionResponse(BaseModel):
+    contribution: list[FeedContribution]
+
+# ── Investigation Summary ────────────────────────────────────────────────────
+
+class DashboardInvestigationSummaryResponse(BaseModel):
+    open: int
+    high_priority: int
+    closed: int
+    recently_updated: int
+
+# ── Intelligence Highlights ──────────────────────────────────────────────────
+
+class Insight(BaseModel):
+    id: str
+    type: str  # e.g., 'spike', 'new_assignment', 'watchlist_hit'
+    title: str
+    description: str
+    severity: str  # 'low', 'medium', 'high', 'critical'
+    metric: int | None = None
+    trend: str | None = None  # 'up', 'down', 'flat'
+    entity_type: str | None = None
+    entity_id: str | None = None
+    timestamp: datetime
+
+class DashboardIntelligenceHighlightsResponse(BaseModel):
+    insights: list[Insight]
+
+# ── Priority Queue ───────────────────────────────────────────────────────────
+
+class PriorityQueueItem(BaseModel):
+    id: str
+    icon: str  # e.g., 'alert-triangle', 'eye', 'shield'
+    item_type: str  # e.g., 'investigation', 'watchlist_match', 'indicator'
+    title: str
+    subtitle: str
+    priority: str  # 'high', 'critical'
+    action: str  # e.g., 'Investigate', 'Acknowledge', 'Triage'
+    timestamp: datetime
+    reference_id: str | None = None
+
+class DashboardPriorityQueueResponse(BaseModel):
+    items: list[PriorityQueueItem]
+
+# ── Investigation Health (Operations) ────────────────────────────────────────
+
+class DashboardInvestigationHealthResponse(BaseModel):
+    open: int
+    high_priority: int
+    overdue: int
+    updated_today: int
+
+# ── Watchlist Activity ───────────────────────────────────────────────────────
+
+class WatchlistActivity(BaseModel):
+    watchlist_id: str
+    watchlist_name: str
+    hits_today: int
+
+class DashboardWatchlistActivityResponse(BaseModel):
+    activities: list[WatchlistActivity]
+
+
+# ── Geospatial & Supply Chain (Phase 1) ──────────────────────────────────────────
+
+class GeospatialCountryCount(BaseModel):
+    country: str
+    count: int
+
+class DashboardGeospatialResponse(BaseModel):
+    countries: list[GeospatialCountryCount]
+
+class SupplierThreatCount(BaseModel):
+    supplier_id: str
+    supplier_name: str
+    threat_count: int
+
+class DashboardSupplyChainResponse(BaseModel):
+    suppliers: list[SupplierThreatCount]

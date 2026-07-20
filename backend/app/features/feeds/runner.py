@@ -35,12 +35,13 @@ from app.features.feeds.pipeline import (
 )
 from app.features.feeds.registry import registry
 from app.features.feeds.schemas import CollectorMetrics
+from app.core.events.bus import RedisEventBus
 
 logger = get_logger(__name__)
 
 _validation_pipeline = ValidationPipeline()
 _normalization_pipeline = NormalizationPipeline()
-_storage_pipeline = StoragePipeline()
+_storage_pipeline = StoragePipeline(event_bus=RedisEventBus())
 
 
 class FeedRunner:

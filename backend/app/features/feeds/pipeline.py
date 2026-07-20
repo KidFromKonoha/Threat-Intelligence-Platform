@@ -103,6 +103,9 @@ class StoragePipeline:
 
     This pipeline also links the stored indicator to its Feed row.
     """
+    
+    def __init__(self, event_bus: 'EventBus' = None):
+        self.event_bus = event_bus
 
     def run(
         self,
@@ -113,77 +116,95 @@ class StoragePipeline:
     ) -> None:
         """Upsert all indicators and update metrics in-place."""
         from datetime import datetime, timezone
-
         from sqlalchemy import select, text
-
         from app.db.associations import indicator_feed
         from app.features.indicators.models import Indicator
+        from app.core.events.schema import EventEnvelope, IndicatorPersistedPayload
+        import uuid
 
+        events_to_publish = []
+        now = datetime.now(tz=timezone.utc)
+        
+        # Prepare values
+        values_list = []
         for raw in indicators:
             metrics.records_received += 1
+            values_list.append({
+                "id": str(uuid.uuid4()),
+                "type": raw.type,
+                "value": raw.value,
+                "normalized_value": raw.normalized_value,
+                "confidence": raw.confidence,
+                "severity": raw.severity,
+                "risk_score": raw.risk_score,
+                "status": raw.status,
+                "first_seen": raw.first_seen,
+                "last_seen": raw.last_seen,
+                "country": raw.country,
+                "asn": raw.asn,
+                "tags": raw.tags,
+                "source_count": 1,
+                "created_at": now,
+                "updated_at": now,
+            })
+            
+        if not values_list:
+            return
 
-            try:
-                now = datetime.now(tz=timezone.utc)
+        try:
+            stmt = pg_insert(Indicator)
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["type", "normalized_value"],
+                set_={
+                    "last_seen": stmt.excluded.last_seen,
+                    "confidence": Indicator.confidence,
+                    "source_count": Indicator.source_count + 1,
+                    "updated_at": now,
+                    "needs_scoring": True,
+                },
+            ).returning(Indicator.id, Indicator.created_at, Indicator.updated_at)
 
-                stmt = (
-                    pg_insert(Indicator)
-                    .values(
-                        id=text("gen_random_uuid()::text"),
-                        type=raw.type,
-                        value=raw.value,
-                        normalized_value=raw.normalized_value,
-                        confidence=raw.confidence,
-                        severity=raw.severity,
-                        risk_score=raw.risk_score,
-                        status=raw.status,
-                        first_seen=raw.first_seen,
-                        last_seen=raw.last_seen,
-                        country=raw.country,
-                        asn=raw.asn,
-                        tags=raw.tags,
-                        source_count=1,
-                        created_at=now,
-                        updated_at=now,
-                    )
-                    .on_conflict_do_update(
-                        index_elements=["type", "normalized_value"],
-                        set_={
-                            "last_seen": raw.last_seen,
-                            "confidence": Indicator.confidence,
-                            "source_count": Indicator.source_count + 1,
-                            "updated_at": now,
-                        },
-                    )
-                    .returning(Indicator.id, Indicator.created_at, Indicator.updated_at)
-                )
-
-                result = db.execute(stmt).fetchone()
-
-                if result is None:
-                    metrics.records_skipped += 1
-                    continue
-
-                indicator_id = result[0]
-                was_inserted = result[1] == result[2]  # created_at == updated_at on insert
+            results = db.execute(stmt, values_list).fetchall()
+            
+            feed_links = []
+            for row in results:
+                indicator_id = row[0]
+                was_inserted = row[1] == row[2]
 
                 if was_inserted:
                     metrics.records_added += 1
+                    if self.event_bus:
+                        payload = IndicatorPersistedPayload(
+                            indicator_id=str(indicator_id),
+                            feed_id=feed_id
+                        )
+                        envelope = EventEnvelope(
+                            producer="StoragePipeline",
+                            payload=payload
+                        )
+                        events_to_publish.append(envelope)
                 else:
                     metrics.records_updated += 1
+                    
+                feed_links.append({"indicator_id": indicator_id, "feed_id": feed_id})
 
-                # Link indicator → feed (ignore if already linked).
+            if feed_links:
                 db.execute(
                     pg_insert(indicator_feed)
-                    .values(indicator_id=indicator_id, feed_id=feed_id)
-                    .on_conflict_do_nothing()
+                    .on_conflict_do_nothing(),
+                    feed_links
                 )
 
-            except Exception as exc:
-                error_msg = f"Failed to store indicator value={raw.value!r}: {exc}"
-                logger.error("[%s] %s", metrics.feed_name, error_msg)
-                metrics.errors.append(error_msg)
-                metrics.records_skipped += 1
-                # Roll back only this record; the session remains usable.
-                db.rollback()
+        except Exception as exc:
+            error_msg = f"Failed bulk indicator upsert: {exc}"
+            logger.error("[%s] %s", metrics.feed_name, error_msg)
+            metrics.errors.append(error_msg)
+            db.rollback()
+            return
 
+        # Only publish events if the entire batch commits successfully
         db.commit()
+        
+        if self.event_bus:
+            for event in events_to_publish:
+                self.event_bus.publish("tip.events.indicator.persisted", event)

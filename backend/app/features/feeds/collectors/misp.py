@@ -251,6 +251,17 @@ class MispCollector(BaseCollector):
                 except (ValueError, TypeError):
                     logger.debug("[%s] Invalid timestamp %r", self.feed_name, timestamp_str)
 
+            # Extract tags that might exist directly on the attribute (MISP structure varies)
+            attribute_tags = record.get("Tag", [])
+            for t in attribute_tags:
+                tag_name = t.get("name")
+                if tag_name:
+                    tags.append(tag_name)
+                    
+            # ── Stage A Normalization Extraction ─────────────────────────────
+            metadata = self.extract_metadata_from_tags(tags)
+            country = metadata.get("country")
+
             indicator = RawIndicator(
                 type=indicator_type,
                 value=value,
@@ -259,6 +270,7 @@ class MispCollector(BaseCollector):
                 severity=Severity.MEDIUM,
                 last_seen=last_seen,
                 tags=tags if tags else None,
+                country=country,
                 raw=record  # Raw source payload preserved for auditing
             )
             normalized.append(indicator)

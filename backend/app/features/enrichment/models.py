@@ -5,7 +5,9 @@ Stores the result of an enrichment provider execution for an indicator.
 
 from __future__ import annotations
 
-from sqlalchemy import Float, ForeignKey, JSON, String, Text, text
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, JSON, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.enums import EnrichmentStatus
@@ -28,23 +30,28 @@ class EnrichmentResult(Base, TimestampMixin):
         Text, ForeignKey("indicators.id", ondelete="CASCADE"), nullable=False, index=True
     )
     
+    provider_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    
     # Store the raw response from the provider for troubleshooting/re-processing
     raw_response: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     
     # Store structured attributes extracted from the raw response
     extracted_attributes: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     
-    execution_status: Mapped[str] = mapped_column(
+    status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,
         default=EnrichmentStatus.PENDING.value,
         index=True,
         comment="EnrichmentStatus enum value stored as string",
     )
-    execution_duration: Mapped[float | None] = mapped_column(Float, nullable=True)
+    
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Note: No back_populates on Indicator to keep the Indicator model decoupled 
     # from enrichment in this phase, as per Phase 6 "no unnecessary columns" rule.
 
     def __repr__(self) -> str:
-        return f"<EnrichmentResult id={self.id!r} provider={self.provider!r} status={self.execution_status!r}>"
+        return f"<EnrichmentResult id={self.id!r} provider={self.provider!r} status={self.status!r}>"

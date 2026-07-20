@@ -114,4 +114,6 @@ class EnrichmentStatus(str, enum.Enum):
     PENDING = "pending"
     SUCCESS = "success"
     FAILED = "failed"
+    SKIPPED = "skipped"
+    NOT_SUPPORTED = "not_supported"
 

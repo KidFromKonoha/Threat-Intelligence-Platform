@@ -43,6 +43,7 @@ class RawIndicator(BaseModel):
     # Optional enrichment fields — populated only when available from source.
     country: str | None = None
     asn: str | None = None
+    tlp: str | None = None
     tags: list[str] | None = None
 
     # Raw source payload preserved for auditing; never exposed to the app layer.

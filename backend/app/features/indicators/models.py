@@ -13,6 +13,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     ARRAY,
+    Boolean,
     JSON,
     CheckConstraint,
     DateTime,
@@ -54,7 +55,17 @@ class Indicator(Base, TimestampMixin):
         default=Severity.MEDIUM.value,
         comment="Severity enum value stored as string",
     )
-    risk_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    needs_scoring: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("true"), index=True
+    )
+    risk_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    risk_score_version: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0"), default=0
+    )
+    scored_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    scoring_failed: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"), default=False)
+    last_scoring_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_scoring_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,
@@ -76,6 +87,7 @@ class Indicator(Base, TimestampMixin):
     # Optional enrichment fields
     country: Mapped[str | None] = mapped_column(String(2), nullable=True, index=True)
     asn: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    tlp: Mapped[str | None] = mapped_column(String(10), nullable=True, index=True)
     whois: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     passive_dns: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     reputation: Mapped[dict | None] = mapped_column(JSON, nullable=True)

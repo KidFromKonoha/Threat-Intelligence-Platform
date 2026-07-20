@@ -155,6 +155,8 @@ class DummyCollector(BaseCollector):
                 continue  # Unknown type — skip silently.
 
             severity = _severity_map.get(record.get("severity", "medium"), Severity.MEDIUM)
+            tags = record.get("tags", [])
+            metadata = self.extract_metadata_from_tags(tags)
 
             normalized.append(
                 RawIndicator(
@@ -164,7 +166,9 @@ class DummyCollector(BaseCollector):
                     confidence=int(record.get("confidence", 50)),
                     severity=severity,
                     risk_score=0,
-                    tags=record.get("tags"),
+                    tags=tags if tags else None,
+                    tlp=metadata.get("tlp"),
+                    country=metadata.get("country"),
                     first_seen=datetime.fromisoformat(record["first_seen"]),
                     last_seen=datetime.fromisoformat(record["last_seen"]),
                     raw=record,

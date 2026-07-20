@@ -1,4 +1,4 @@
-import { WidgetRegistryEntry } from './types';
+import type { WidgetRegistryEntry } from './types';
 
 class WidgetRegistry {
   private widgets: Map<string, WidgetRegistryEntry> = new Map();

@@ -11,9 +11,10 @@ router = APIRouter(prefix="/graph", tags=["Graph API"])
 
 
 @router.get("/indicator/{indicator_id}", response_model=GraphResponse)
+@router.get("/{indicator_id}", response_model=GraphResponse)
 def get_indicator_graph(
     indicator_id: str,
-    depth: int = Query(1, ge=1, le=3, description="Traversal depth (1-3)"),
+    depth: int = Query(2, ge=1, le=3, description="Traversal depth (1-3)"),
     db: Session = Depends(get_db)
 ):
     """Retrieve relationship graph for an Indicator."""

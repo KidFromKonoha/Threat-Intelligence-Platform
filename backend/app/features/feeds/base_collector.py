@@ -101,3 +101,28 @@ class BaseCollector(abc.ABC):
 
         Override for feed-specific side effects (e.g. checkpointing a cursor).
         """
+
+    # ── Helpers for Stage A Normalization ─────────────────────────────────────
+    
+    TAG_EXTRACTION_MAP = {
+        "tlp:": "tlp",
+        "geo:": "country",
+        "country:": "country",
+        "confidence:": "confidence"
+    }
+    
+    def extract_metadata_from_tags(self, tags: list[str]) -> dict[str, str]:
+        """Extract lightweight metadata natively present in tags.
+        
+        This satisfies Stage A (Normalization) constraints: it only parses existing 
+        payload data and never makes external API requests.
+        """
+        metadata = {}
+        for tag in tags:
+            tag_lower = tag.lower()
+            for prefix, field in self.TAG_EXTRACTION_MAP.items():
+                if tag_lower.startswith(prefix):
+                    val = tag_lower.split(prefix, 1)[1]
+                    metadata[field] = val.upper()[:2] if field == "country" else val
+                    
+        return metadata

@@ -371,6 +371,12 @@ class ThreatFoxCollector(BaseCollector):
                 seen.add(t)
                 deduped_tags.append(t)
 
+        # ── Stage A Normalization Extraction ─────────────────────────────────
+        metadata = self.extract_metadata_from_tags(deduped_tags)
+        country = metadata.get("country")
+        # If there's a TLP tag, we could adjust severity or confidence, but
+        # the schema doesn't have a tlp field yet, so we just extract country.
+
         return RawIndicator(
             type=indicator_type,
             value=raw_value,
@@ -381,6 +387,7 @@ class ThreatFoxCollector(BaseCollector):
             first_seen=first_seen,
             last_seen=last_seen,
             tags=deduped_tags,
+            country=country,
             raw={
                 "source": "threatfox",
                 "id": record.get("id"),
